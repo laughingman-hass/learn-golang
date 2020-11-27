@@ -9,3 +9,11 @@ func Repeat(character string) string {
     }
     return repeated
 }
+
+func RepeatFor(character string, repeatFor int) string {
+    var repeated string
+    for i := 0; i < repeatFor; i++ {
+        repeated += character
+    }
+    return repeated
+}
