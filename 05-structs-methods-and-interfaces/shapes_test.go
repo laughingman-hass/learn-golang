@@ -3,12 +3,19 @@ package shapes
 import "testing"
 
 func TestPerimeter(t *testing.T) {
-	rectangle := Rectangle{10.0, 10.0}
-	got := Perimeter(rectangle)
-	want := 40.0
+	perimeterTests := []struct {
+		shape Shape
+		want  float64
+	}{
+		{Rectangle{10.0, 10.0}, 40.0},
+		{Circle{5.0}, 31.41592653589793},
+	}
 
-	if got != want {
-		t.Errorf("got %.2f, want %.2f", got, want)
+	for _, tt := range perimeterTests {
+		got := tt.shape.Perimeter()
+		if got != tt.want {
+			t.Errorf("got %g, want %g", got, tt.want)
+		}
 	}
 }
 
