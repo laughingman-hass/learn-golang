@@ -3,26 +3,6 @@ package wallet
 import "testing"
 
 func TestWallet(t *testing.T) {
-	assertBalance := func(t *testing.T, wallet Wallet, expected Bitcoin) {
-		t.Helper()
-		actual := wallet.Balance()
-
-		if actual != expected {
-			t.Errorf("actual %s, expected %s", actual, expected)
-		}
-	}
-
-	assertError := func(t *testing.T, actualError error, expectedError error) {
-		t.Helper()
-		if actualError == nil {
-			t.Errorf("wanted an error but didn't get one")
-		}
-
-		if actualError != expectedError {
-			t.Errorf("actual %q, expected %q", actualError, expectedError)
-		}
-	}
-
 	t.Run("Deposit", func(t *testing.T) {
 		wallet := Wallet{}
 		wallet.Deposit(Bitcoin(10))
@@ -43,4 +23,24 @@ func TestWallet(t *testing.T) {
 		assertBalance(t, wallet, startingBalance)
 		assertError(t, actualError, ErrInsufficientFunds)
 	})
+}
+
+func assertBalance(t *testing.T, wallet Wallet, expected Bitcoin) {
+	t.Helper()
+	actual := wallet.Balance()
+
+	if actual != expected {
+		t.Errorf("actual %s, expected %s", actual, expected)
+	}
+}
+
+func assertError(t *testing.T, actualError error, expectedError error) {
+	t.Helper()
+	if actualError == nil {
+		t.Errorf("wanted an error but didn't get one")
+	}
+
+	if actualError != expectedError {
+		t.Errorf("actual %q, expected %q", actualError, expectedError)
+	}
 }
