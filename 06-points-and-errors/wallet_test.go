@@ -11,6 +11,6 @@ func TestWallet(t *testing.T) {
 	expected := Bitcoin(10)
 
 	if actual != expected {
-		t.Errorf("actual %d, expected %d", actual, expected)
+		t.Errorf("actual %s, expected %s", actual, expected)
 	}
 }
