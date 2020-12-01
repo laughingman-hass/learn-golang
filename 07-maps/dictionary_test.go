@@ -20,6 +20,21 @@ func TestSearch(t *testing.T) {
 	})
 }
 
+func TestAdd(t *testing.T) {
+	dictionary := Dictionary{}
+	dictionary.Add("test", "this is just a test")
+
+	expected := "this is just a test"
+	actual, err := dictionary.Search("test")
+	if err != nil {
+		t.Fatal("should find added word", err)
+	}
+
+	if actual != expected {
+		t.Errorf("actual %q, expected %q", actual, expected)
+	}
+}
+
 func assertStrings(t *testing.T, actualString, expectedString string) {
 	t.Helper()
 
