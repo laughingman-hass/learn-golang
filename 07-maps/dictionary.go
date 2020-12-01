@@ -41,6 +41,10 @@ func (d Dictionary) Update(word, definition string) error {
 	return nil
 }
 
+func (d Dictionary) Delete(word string) {
+	delete(d, word)
+}
+
 const (
 	ErrNotFound         = DictionaryErr("could not find the word you were looking for")
 	ErrWordExists       = DictionaryErr("cannot add word because it already exists")
