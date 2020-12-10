@@ -1,4 +1,4 @@
-package sync
+package sync_counter
 
 type Counter struct {
 	value int

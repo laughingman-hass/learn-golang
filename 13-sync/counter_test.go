@@ -1,4 +1,4 @@
-package sync
+package sync_counter
 
 import "testing"
 
@@ -13,4 +13,11 @@ func TestCounter(t *testing.T) {
 			t.Errorf("actual %d, expected %d", counter.Value(), 3)
 		}
 	})
+}
+
+func assertCounter(t *testing.T, actual Counter, expected int) {
+	t.Helper()
+	if actual.Value() != expected {
+		t.Errorf("actual %d, expected %d", actual.Value(), expected)
+	}
 }
