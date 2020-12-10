@@ -58,6 +58,13 @@ func TestWalk(t *testing.T) {
 				{34, "Manchester"},
 			},
 			[]string{"Tokyo", "Manchester"},
+		}, {
+			"Maps",
+			map[string]string{
+				"LaughingMan": "Tokyo",
+				"Hass":        "Manchester",
+			},
+			[]string{"Tokyo", "Manchester"},
 		},
 	}
 
