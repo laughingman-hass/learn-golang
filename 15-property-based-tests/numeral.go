@@ -1,4 +1,4 @@
-package numeral
+package numeral_converter
 
 func ConvertToRoman(arabic int) string {
 	if arabic == 2 {
