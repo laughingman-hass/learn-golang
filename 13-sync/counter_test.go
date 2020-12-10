@@ -19,7 +19,7 @@ func TestCounter(t *testing.T) {
 
 	t.Run("it runs safely concurrently", func(t *testing.T) {
 		expectedCount := 1000
-		counter := Counter{}
+		counter := SafeCounter()
 
 		var wg sync.WaitGroup
 		wg.Add(expectedCount)
@@ -36,7 +36,7 @@ func TestCounter(t *testing.T) {
 	})
 }
 
-func assertCounter(t *testing.T, actual Counter, expected int) {
+func assertCounter(t *testing.T, actual *Counter, expected int) {
 	t.Helper()
 	if actual.Value() != expected {
 		t.Errorf("actual %d, expected %d", actual.Value(), expected)

@@ -2,6 +2,10 @@ package sync_counter
 
 import "sync"
 
+func SafeCounter() *Counter {
+	return &Counter{}
+}
+
 type Counter struct {
 	mu    sync.Mutex
 	value int
