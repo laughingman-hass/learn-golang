@@ -13,6 +13,7 @@ func TestGETPlayers(t *testing.T) {
 			"Hass":        20,
 			"LaughingMan": 10,
 		},
+		nil,
 	}
 	server := &PlayerServer{&store}
 
@@ -49,6 +50,7 @@ func TestGETPlayers(t *testing.T) {
 func TestStoreWins(t *testing.T) {
 	store := StubPlayerStore{
 		map[string]int{},
+		nil,
 	}
 	server := &PlayerServer{&store}
 
@@ -59,6 +61,10 @@ func TestStoreWins(t *testing.T) {
 		server.ServeHTTP(response, request)
 
 		assertRespnseStatus(t, response.Code, http.StatusAccepted)
+
+		if len(store.winCalls) != 1 {
+			t.Errorf("actual %d calls to RecordWin, expected %d", len(store.winCalls), 1)
+		}
 	})
 }
 
@@ -82,10 +88,15 @@ func assertRespnseStatus(t *testing.T, actual, expected int) {
 }
 
 type StubPlayerStore struct {
-	scores map[string]int
+	scores   map[string]int
+	winCalls []string
 }
 
 func (s *StubPlayerStore) GetPlayerScore(name string) int {
 	score := s.scores[name]
 	return score
+}
+
+func (s *StubPlayerStore) RecordWin(name string) {
+	s.winCalls = append(s.winCalls, name)
 }
