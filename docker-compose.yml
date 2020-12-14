@@ -7,3 +7,18 @@ services:
       - 4000:4000
     volumes:
       - .:/usr/src/app
+    labels:
+      - traefik.http.services.app.loadbalancer.server.port=4000
+
+  traefik:
+    image: traefik:v2.3.5
+    depends_on:
+      - app
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./tools/traefik:/etc/traefik
+    restart: always
+

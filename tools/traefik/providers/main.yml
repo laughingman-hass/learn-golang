@@ -1,0 +1,14 @@
+http:
+  routers:
+    traefik:
+      rule: "Host(`traefik.dev.razgriz.io`)"
+      entryPoints:
+        - web
+      service: api@internal
+
+    app:
+      rule: "Host(`dev.razgriz.io`)"
+      entryPoints:
+        - web
+      service: app@docker
+
