@@ -11,25 +11,28 @@ import (
 var (
 	homeTemplate    *template.Template
 	contactTemplate *template.Template
+	faqTempate      *template.Template
 )
 
 func home(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 	if err := homeTemplate.Execute(w, nil); err != nil {
-        panic(err)
+		panic(err)
 	}
 }
 
 func contact(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
-    if err := contactTemplate.Execute(w, nil); err != nil {
-        panic(err)
-    }
+	if err := contactTemplate.Execute(w, nil); err != nil {
+		panic(err)
+	}
 }
 
 func faq(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
-	fmt.Fprint(w, "<h1>Frequently Asked Questions</h1><p>Here is a list of questions that our users commonly ask.</p>")
+	if err := faqTempate.Execute(w, nil); err != nil {
+		panic(err)
+	}
 }
 
 func notFound(w http.ResponseWriter, r *http.Request) {
@@ -46,6 +49,11 @@ func main() {
 	}
 
 	contactTemplate, err = template.ParseFiles("views/contact.gohtml")
+	if err != nil {
+		panic(err)
+	}
+
+	faqTempate, err = template.ParseFiles("views/faq.gohtml")
 	if err != nil {
 		panic(err)
 	}
