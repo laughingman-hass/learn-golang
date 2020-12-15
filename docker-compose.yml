@@ -2,7 +2,11 @@ version: '3.8'
 services:
   app:
     build: .
-    command: sleep 100d
+    command: >
+        sh -c '
+          make install-tools &&
+          sleep 100d
+        '
     expose:
       - 3000
     volumes:
