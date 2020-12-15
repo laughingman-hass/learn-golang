@@ -3,12 +3,12 @@ services:
   app:
     build: .
     command: sleep 100d
-    ports:
-      - 4000:4000
+    expose:
+      - 3000
     volumes:
       - .:/usr/src/app
     labels:
-      - traefik.http.services.app.loadbalancer.server.port=4000
+      - traefik.http.services.app.loadbalancer.server.port=3000
 
   traefik:
     image: traefik:v2.3.5
