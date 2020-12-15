@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"html/template"
 	"net/http"
 
@@ -9,9 +8,10 @@ import (
 )
 
 var (
-	homeTemplate    *template.Template
-	contactTemplate *template.Template
-	faqTempate      *template.Template
+	homeTemplate     *template.Template
+	contactTemplate  *template.Template
+	faqTempate       *template.Template
+	notFoundTemplate *template.Template
 )
 
 func home(w http.ResponseWriter, r *http.Request) {
@@ -38,7 +38,9 @@ func faq(w http.ResponseWriter, r *http.Request) {
 func notFound(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 	w.WriteHeader(http.StatusNotFound)
-	fmt.Fprint(w, "<h1>Sorry, the page you were looking for is not found</h1>")
+	if err := notFoundTemplate.Execute(w, nil); err != nil {
+		panic(err)
+	}
 }
 
 func main() {
@@ -54,6 +56,11 @@ func main() {
 	}
 
 	faqTempate, err = template.ParseFiles("views/faq.gohtml")
+	if err != nil {
+		panic(err)
+	}
+
+	notFoundTemplate, err = template.ParseFiles("views/not_found.gohtml")
 	if err != nil {
 		panic(err)
 	}
