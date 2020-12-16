@@ -12,6 +12,7 @@ var (
 	contactView  *views.View
 	faqView      *views.View
 	notFoundView *views.View
+	signupView   *views.View
 )
 
 func home(w http.ResponseWriter, r *http.Request) {
@@ -29,6 +30,11 @@ func faq(w http.ResponseWriter, r *http.Request) {
 	must(faqView.Render(w, nil))
 }
 
+func signup(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html")
+	must(signupView.Render(w, nil))
+}
+
 func notFound(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 	w.WriteHeader(http.StatusNotFound)
@@ -40,6 +46,7 @@ func main() {
 	contactView = views.NewView("bootstrap", "views/contact.gohtml")
 	faqView = views.NewView("bootstrap", "views/faq.gohtml")
 	notFoundView = views.NewView("bootstrap", "views/not_found.gohtml")
+	signupView = views.NewView("bootstrap", "views/signup.gohtml")
 
 	r := mux.NewRouter()
 	r.NotFoundHandler = http.HandlerFunc(notFound)
@@ -47,6 +54,7 @@ func main() {
 	r.HandleFunc("/", home)
 	r.HandleFunc("/contact", contact)
 	r.HandleFunc("/faq", faq)
+	r.HandleFunc("/signup", signup)
 
 	http.ListenAndServe(":3000", r)
 }
