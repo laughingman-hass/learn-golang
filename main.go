@@ -16,39 +16,23 @@ var (
 
 func home(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
-	err := homeView.Template.ExecuteTemplate(w, homeView.Layout, nil)
-
-	if err != nil {
-		panic(err)
-	}
+	must(homeView.Render(w, nil))
 }
 
 func contact(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
-	err := contactView.Template.ExecuteTemplate(w, contactView.Layout, nil)
-
-	if err != nil {
-		panic(err)
-	}
+	must(contactView.Render(w, nil))
 }
 
 func faq(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
-	err := faqView.Template.ExecuteTemplate(w, faqView.Layout, nil)
-
-	if err != nil {
-		panic(err)
-	}
+	must(faqView.Render(w, nil))
 }
 
 func notFound(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 	w.WriteHeader(http.StatusNotFound)
-	err := notFoundView.Template.ExecuteTemplate(w, notFoundView.Layout, nil)
-
-	if err != nil {
-		panic(err)
-	}
+	must(notFoundView.Render(w, nil))
 }
 
 func main() {
@@ -65,4 +49,10 @@ func main() {
 	r.HandleFunc("/faq", faq)
 
 	http.ListenAndServe(":3000", r)
+}
+
+func must(err error) {
+	if err != nil {
+		panic(err)
+	}
 }
