@@ -45,22 +45,34 @@ func notFound(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	var err error
-	homeTemplate, err = template.ParseFiles("views/home.gohtml")
+	homeTemplate, err = template.ParseFiles(
+		"views/home.gohtml",
+		"views/layouts/footer.gohtml",
+	)
 	if err != nil {
 		panic(err)
 	}
 
-	contactTemplate, err = template.ParseFiles("views/contact.gohtml")
+	contactTemplate, err = template.ParseFiles(
+		"views/contact.gohtml",
+		"views/layouts/footer.gohtml",
+	)
 	if err != nil {
 		panic(err)
 	}
 
-	faqTempate, err = template.ParseFiles("views/faq.gohtml")
+	faqTempate, err = template.ParseFiles(
+		"views/faq.gohtml",
+		"views/layouts/footer.gohtml",
+	)
 	if err != nil {
 		panic(err)
 	}
 
-	notFoundTemplate, err = template.ParseFiles("views/not_found.gohtml")
+	notFoundTemplate, err = template.ParseFiles(
+		"views/not_found.gohtml",
+		"views/layouts/footer.gohtml",
+	)
 	if err != nil {
 		panic(err)
 	}
