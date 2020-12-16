@@ -1,7 +1,6 @@
 package main
 
 import (
-	"html/template"
 	"learn-golang/views"
 	"net/http"
 
@@ -9,10 +8,10 @@ import (
 )
 
 var (
-	homeView         *views.View
-	contactView      *views.View
-	faqTempate       *template.Template
-	notFoundTemplate *template.Template
+	homeView     *views.View
+	contactView  *views.View
+	faqView      *views.View
+	notFoundView *views.View
 )
 
 func home(w http.ResponseWriter, r *http.Request) {
@@ -35,7 +34,9 @@ func contact(w http.ResponseWriter, r *http.Request) {
 
 func faq(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
-	if err := faqTempate.Execute(w, nil); err != nil {
+	err := faqView.Template.Execute(w, nil)
+
+	if err != nil {
 		panic(err)
 	}
 }
@@ -43,7 +44,9 @@ func faq(w http.ResponseWriter, r *http.Request) {
 func notFound(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 	w.WriteHeader(http.StatusNotFound)
-	if err := notFoundTemplate.Execute(w, nil); err != nil {
+	err := notFoundView.Template.Execute(w, nil)
+
+	if err != nil {
 		panic(err)
 	}
 }
@@ -51,23 +54,8 @@ func notFound(w http.ResponseWriter, r *http.Request) {
 func main() {
 	homeView = views.NewView("views/home.gohtml")
 	contactView = views.NewView("views/contact.gohtml")
-
-	var err error
-	faqTempate, err = template.ParseFiles(
-		"views/faq.gohtml",
-		"views/layouts/footer.gohtml",
-	)
-	if err != nil {
-		panic(err)
-	}
-
-	notFoundTemplate, err = template.ParseFiles(
-		"views/not_found.gohtml",
-		"views/layouts/footer.gohtml",
-	)
-	if err != nil {
-		panic(err)
-	}
+	faqView = views.NewView("views/faq.gohtml")
+	notFoundView = views.NewView("views/not_found.gohtml")
 
 	r := mux.NewRouter()
 	r.NotFoundHandler = http.HandlerFunc(notFound)
