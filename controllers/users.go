@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"learn-golang/views"
 	"net/http"
 )
@@ -20,4 +21,8 @@ func (u UsersController) New(w http.ResponseWriter, r *http.Request) {
 	if err := u.NewView.Render(w, nil); err != nil {
 		panic(err)
 	}
+}
+
+func (u *UsersController) Create(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintln(w, "This is a temporary response.")
 }
