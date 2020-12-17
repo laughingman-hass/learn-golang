@@ -4,10 +4,10 @@ import "learn-golang/views"
 
 func NewStatic() *Static {
 	return &Static{
-		Home:     views.NewView("bootstrap", "views/static/home.gohtml"),
-		Contact:  views.NewView("bootstrap", "views/static/contact.gohtml"),
-		FAQ:      views.NewView("bootstrap", "views/static/faq.gohtml"),
-		NotFound: views.NewView("bootstrap", "views/static/not_found.gohtml"),
+		Home:     views.NewView("bootstrap", "static/home"),
+		Contact:  views.NewView("bootstrap", "static/contact"),
+		FAQ:      views.NewView("bootstrap", "static/faq"),
+		NotFound: views.NewView("bootstrap", "static/not_found"),
 	}
 }
 
