@@ -7,12 +7,19 @@ services:
           make install-tools &&
           sleep 100d
         '
+    environment:
+      PGPASSWORD: mysecretpassword
     expose:
       - 3000
     volumes:
       - .:/usr/src/app
     labels:
       - traefik.http.services.app.loadbalancer.server.port=3000
+  
+  db:
+    image: postgres:13.1-alpine
+    environment:
+      POSTGRES_PASSWORD: mysecretpassword
 
   traefik:
     image: traefik:v2.3.5
