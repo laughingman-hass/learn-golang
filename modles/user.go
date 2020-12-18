@@ -11,6 +11,16 @@ var (
 	ErrNotFound = errors.New("models: resource not found")
 )
 
+func NewUserServices(connectionInfo string) (*UserService, error) {
+	db, err := gorm.Open("postgres", connectionInfo)
+	if err != nil {
+		return nil, err
+	}
+	return &UserService{
+		db: db,
+	}, nil
+}
+
 type UserService struct {
 	db *gorm.DB
 }
@@ -27,6 +37,10 @@ func (us *UserService) ByID(id int) (*User, error) {
 	default:
 		return nil, err
 	}
+}
+
+func (us *UserService) Close() error {
+	return us.db.Close()
 }
 
 type User struct {
