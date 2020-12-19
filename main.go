@@ -1,15 +1,29 @@
 package main
 
 import (
+	"fmt"
 	"learn-golang/controllers"
+	"learn-golang/models"
 	"net/http"
 
 	"github.com/gorilla/mux"
 )
 
+const (
+	host     = "db"
+	port     = "5432"
+	user     = "postgres"
+	password = "mysecretpassword"
+	dbname   = "lenslocked_dev"
+)
+
 func main() {
+	connectionInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+	us, err := models.NewUserServices(connectionInfo)
+	must(err)
+	defer us.Close()
 	staticController := controllers.NewStatic()
-	usersController := controllers.NewUsers()
+	usersController := controllers.NewUsers(us)
 
 	r := mux.NewRouter()
 	r.NotFoundHandler = http.Handler(staticController.NotFound)

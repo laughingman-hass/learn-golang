@@ -17,6 +17,7 @@ func NewUserServices(connectionInfo string) (*UserService, error) {
 	if err != nil {
 		return nil, err
 	}
+	db.AutoMigrate(User{})
 	return &UserService{
 		db: db,
 	}, nil
