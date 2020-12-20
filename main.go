@@ -24,6 +24,7 @@ func main() {
 	defer us.Close()
 	staticController := controllers.NewStatic()
 	usersController := controllers.NewUsers(us)
+	sessionsController := controllers.NewSession(us)
 
 	r := mux.NewRouter()
 	r.NotFoundHandler = http.Handler(staticController.NotFound)
@@ -34,6 +35,8 @@ func main() {
 
 	r.HandleFunc("/signup", usersController.New).Methods("GET")
 	r.HandleFunc("/signup", usersController.Create).Methods("POST")
+	r.HandleFunc("/login", sessionsController.New).Methods("GET")
+	r.HandleFunc("/login", sessionsController.Create).Methods("POST")
 
 	http.ListenAndServe(":3000", r)
 }
