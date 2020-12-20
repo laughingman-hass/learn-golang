@@ -25,14 +25,14 @@ type Signupform struct {
 	Password string `schema:"password"`
 }
 
-func (u UsersController) New(w http.ResponseWriter, r *http.Request) {
+func (uc UsersController) New(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
-	if err := u.NewView.Render(w, nil); err != nil {
+	if err := uc.NewView.Render(w, nil); err != nil {
 		panic(err)
 	}
 }
 
-func (u *UsersController) Create(w http.ResponseWriter, r *http.Request) {
+func (uc *UsersController) Create(w http.ResponseWriter, r *http.Request) {
 	var form Signupform
 
 	if err := parseForm(&form, r); err != nil {
@@ -45,7 +45,7 @@ func (u *UsersController) Create(w http.ResponseWriter, r *http.Request) {
 		Password: form.Password,
 	}
 
-	if err := u.us.Create(&user); err != nil {
+	if err := uc.us.Create(&user); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
