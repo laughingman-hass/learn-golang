@@ -50,5 +50,5 @@ func (uc *UsersController) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprintln(w, form)
+	fmt.Fprintln(w, user)
 }
