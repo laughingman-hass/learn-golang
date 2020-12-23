@@ -52,6 +52,15 @@ func (us *UserService) ByEmail(email string) (*User, error) {
 	return &user, err
 }
 
+func (us *UserService) BySession(token string) (*User, error) {
+	tokenHash := us.hmac.Hash(token)
+	var user User
+	db := us.db.Where("session_token_hash", tokenHash)
+	err := first(db, &user)
+	return &user, err
+
+}
+
 func (us *UserService) Authenticate(email, password string) (*User, error) {
 	foundUser, err := us.ByEmail(email)
 	if err != nil {
