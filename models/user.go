@@ -104,8 +104,10 @@ func (us *UserService) Close() error {
 
 type User struct {
 	gorm.Model
-	Name         string
-	Email        string `gorm:"not null;unique_index"`
-	Password     string `gorm:"-"`
-	PasswordHash string `gorm:"not null"`
+	Name             string
+	Email            string `gorm:"not null;unique_index"`
+	Password         string `gorm:"-"`
+	PasswordHash     string `gorm:"not null"`
+	Session          string `gorm:"-"`
+	SessionTokenHash string `gorm:"not null;unique_index"`
 }
