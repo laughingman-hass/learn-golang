@@ -35,6 +35,7 @@ func main() {
 
 	r.HandleFunc("/signup", usersController.New).Methods("GET")
 	r.HandleFunc("/signup", usersController.Create).Methods("POST")
+	r.HandleFunc("/cookietest", usersController.CookieTest).Methods("GET")
 	r.HandleFunc("/login", sessionsController.New).Methods("GET")
 	r.HandleFunc("/login", sessionsController.Create).Methods("POST")
 

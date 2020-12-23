@@ -52,3 +52,13 @@ func (uc *UsersController) Create(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Fprintln(w, user)
 }
+
+func (uc *UsersController) CookieTest(w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("email")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	fmt.Fprintln(w, "Email is:", cookie.Value)
+	fmt.Fprintln(w, cookie)
+}
