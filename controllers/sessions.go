@@ -47,15 +47,20 @@ func (sc *SessionsController) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cookie := http.Cookie{
-		Name:  "email",
-		Value: user.Email,
-	}
+	signIn(w, user)
 
-	http.SetCookie(w, &cookie)
+	http.Redirect(w, r, "/cookietest", http.StatusFound)
 }
 
 type SessionParams struct {
 	Email    string `schema:"email"`
 	Password string `schema:"password"`
+}
+
+func signIn(w http.ResponseWriter, user *models.User) {
+	cookie := http.Cookie{
+		Name:  "email",
+		Value: user.Email,
+	}
+	http.SetCookie(w, &cookie)
 }

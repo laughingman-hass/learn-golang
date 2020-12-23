@@ -50,7 +50,8 @@ func (uc *UsersController) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Fprintln(w, user)
+	signIn(w, &user)
+	http.Redirect(w, r, "/cookietest", http.StatusFound)
 }
 
 func (uc *UsersController) CookieTest(w http.ResponseWriter, r *http.Request) {
