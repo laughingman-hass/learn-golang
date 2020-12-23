@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 
+	"learn-golang/hash"
+
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"golang.org/x/crypto/bcrypt"
@@ -16,6 +18,7 @@ var (
 )
 
 const userPwPepper = "random-secret-pepper"
+const hmacSecretKey = "secret-hmac-key"
 
 func NewUserServices(connectionInfo string) (*UserService, error) {
 	db, err := gorm.Open("postgres", connectionInfo)
@@ -23,13 +26,16 @@ func NewUserServices(connectionInfo string) (*UserService, error) {
 		return nil, err
 	}
 	db.AutoMigrate(User{})
+	hmac := hash.NewHMAC(hmacSecretKey)
 	return &UserService{
-		db: db,
+		db:   db,
+		hmac: hmac,
 	}, nil
 }
 
 type UserService struct {
-	db *gorm.DB
+	db   *gorm.DB
+	hmac hash.HMAC
 }
 
 func (us *UserService) ByID(id int) (*User, error) {
@@ -83,10 +89,16 @@ func (us *UserService) Create(user *User) error {
 	}
 	user.PasswordHash = string(hashedBytes)
 	user.Password = ""
+	if user.Session != "" {
+		user.SessionTokenHash = us.hmac.Hash(user.Session)
+	}
 	return us.db.Create(user).Error
 }
 
 func (us *UserService) Update(user *User) error {
+	if user.Session != "" {
+		user.SessionTokenHash = us.hmac.Hash(user.Session)
+	}
 	return us.db.Save(user).Error
 }
 
