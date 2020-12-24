@@ -62,10 +62,15 @@ func NewUserServices(connectionInfo string) (UserService, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	hmac := hash.NewHMAC(hmacSecretKey)
+	uv := &userValidator{
+		hmac:   hmac,
+		UserDB: ug,
+	}
+
 	return &userService{
-		UserDB: &userValidator{
-			UserDB: ug,
-		},
+		UserDB: uv,
 	}, nil
 }
 
@@ -95,17 +100,78 @@ func (us *userService) Authenticate(email, password string) (*User, error) {
 	return foundUser, nil
 }
 
+type userValFunc func(*User) error
+
+func runUserValFuncs(user *User, fns ...userValFunc) error {
+	for _, fn := range fns {
+		if err := fn(user); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 var _ UserDB = &userValidator{}
 
 type userValidator struct {
 	UserDB
+	hmac hash.HMAC
+}
+
+// BySession will hash the session token and then call
+// BySession on the subsequent UserDB layer.
+func (uv *userValidator) BySession(token string) (*User, error) {
+	tokenHash := uv.hmac.Hash(token)
+	return uv.UserDB.BySession(tokenHash)
+}
+
+func (uv *userValidator) Create(user *User) error {
+	if err := runUserValFuncs(user, uv.bcryptPassword); err != nil {
+		return err
+	}
+
+	if user.SessionToken != "" {
+		user.SessionTokenHash = uv.hmac.Hash(user.SessionToken)
+	}
+	return uv.UserDB.Create(user)
+}
+
+func (uv *userValidator) Update(user *User) error {
+	if user.SessionToken != "" {
+		user.SessionTokenHash = uv.hmac.Hash(user.SessionToken)
+	}
+	return uv.UserDB.Update(user)
+}
+
+func (uv *userValidator) Delete(id uint) error {
+	if id == 0 {
+		return ErrInvalidID
+	}
+	return uv.UserDB.Delete(id)
 }
 
 var _ UserDB = &userGorm{}
 
 type userGorm struct {
-	db   *gorm.DB
-	hmac hash.HMAC
+	db *gorm.DB
+}
+
+// bcryptPassword will hash a user's password with a predefined
+// pepper (userPwPepper) and bcrypt if the Password field is
+// not an empty string
+func (uv *userValidator) bcryptPassword(user *User) error {
+	if user.Password == "" {
+		return nil
+	}
+
+	pwBytes := []byte(user.Password + userPwPepper)
+	hashedBytes, err := bcrypt.GenerateFromPassword(pwBytes, bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+	user.PasswordHash = string(hashedBytes)
+	user.Password = ""
+	return nil
 }
 
 func newUserGorm(connectionInfo string) (*userGorm, error) {
@@ -114,13 +180,12 @@ func newUserGorm(connectionInfo string) (*userGorm, error) {
 		return nil, err
 	}
 	db.AutoMigrate(User{})
-	hmac := hash.NewHMAC(hmacSecretKey)
 	return &userGorm{
-		db:   db,
-		hmac: hmac,
+		db: db,
 	}, nil
 }
 
+// Query the database for a User by an ID
 func (ug *userGorm) ByID(id uint) (*User, error) {
 	var user User
 	db := ug.db.Where("id = ?", id)
@@ -128,6 +193,7 @@ func (ug *userGorm) ByID(id uint) (*User, error) {
 	return &user, err
 }
 
+// Query the database for a User by an email
 func (ug *userGorm) ByEmail(email string) (*User, error) {
 	var user User
 	db := ug.db.Where("email = ?", email)
@@ -135,8 +201,8 @@ func (ug *userGorm) ByEmail(email string) (*User, error) {
 	return &user, err
 }
 
-func (ug *userGorm) BySession(token string) (*User, error) {
-	tokenHash := ug.hmac.Hash(token)
+// Query the database for a User by a session token
+func (ug *userGorm) BySession(tokenHash string) (*User, error) {
 	var user User
 	db := ug.db.Where("session_token_hash = ?", tokenHash)
 	err := first(db, &user)
@@ -144,30 +210,14 @@ func (ug *userGorm) BySession(token string) (*User, error) {
 }
 
 func (ug *userGorm) Create(user *User) error {
-	pwBytes := []byte(user.Password + userPwPepper)
-	hashedBytes, err := bcrypt.GenerateFromPassword(pwBytes, bcrypt.DefaultCost)
-	if err != nil {
-		return err
-	}
-	user.PasswordHash = string(hashedBytes)
-	user.Password = ""
-	if user.SessionToken != "" {
-		user.SessionTokenHash = ug.hmac.Hash(user.SessionToken)
-	}
 	return ug.db.Create(user).Error
 }
 
 func (ug *userGorm) Update(user *User) error {
-	if user.SessionToken != "" {
-		user.SessionTokenHash = ug.hmac.Hash(user.SessionToken)
-	}
 	return ug.db.Save(user).Error
 }
 
 func (ug *userGorm) Delete(id uint) error {
-	if id == 0 {
-		return ErrInvalidID
-	}
 	user := User{Model: gorm.Model{ID: id}}
 	return ug.db.Delete(&user).Error
 }
