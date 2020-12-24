@@ -3,6 +3,7 @@ package models
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"learn-golang/hash"
 	"learn-golang/rand"
@@ -131,9 +132,25 @@ func (uv *userValidator) BySession(token string) (*User, error) {
 	return uv.UserDB.BySession(user.SessionToken)
 }
 
+func (uv *userValidator) ByEmail(email string) (*User, error) {
+	user := User{
+		Email: email,
+	}
+	if err := runUserValFuncs(&user, uv.normalizeEmail); err != nil {
+		return nil, err
+	}
+	return uv.UserDB.ByEmail(user.Email)
+}
+
 func (uv *userValidator) Create(user *User) error {
 
-	err := runUserValFuncs(user, uv.bcryptPassword, uv.defaultSessionToken, uv.hmacSessionToken)
+	err := runUserValFuncs(
+		user,
+		uv.bcryptPassword,
+		uv.defaultSessionToken,
+		uv.hmacSessionToken,
+		uv.normalizeEmail,
+	)
 	if err != nil {
 		return err
 	}
@@ -141,7 +158,12 @@ func (uv *userValidator) Create(user *User) error {
 }
 
 func (uv *userValidator) Update(user *User) error {
-	err := runUserValFuncs(user, uv.bcryptPassword, uv.hmacSessionToken)
+	err := runUserValFuncs(
+		user,
+		uv.bcryptPassword,
+		uv.hmacSessionToken,
+		uv.normalizeEmail,
+	)
 	if err != nil {
 		return err
 	}
@@ -209,6 +231,12 @@ func (uv *userValidator) idGreaterThan(n uint) userValFunc {
 		}
 		return nil
 	})
+}
+
+func (uv *userValidator) normalizeEmail(user *User) error {
+	user.Email = strings.ToLower(user.Email)
+	user.Email = strings.TrimSpace(user.Email)
+	return nil
 }
 
 func newUserGorm(connectionInfo string) (*userGorm, error) {
