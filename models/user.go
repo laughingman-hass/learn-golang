@@ -20,6 +20,7 @@ var (
 	ErrInvalidPassword = errors.New("models: incorrect password provided")
 	ErrEmailRequired   = errors.New("models: email address is required")
 	ErrInvalidEmail    = errors.New("models: email address is not valid")
+	ErrEmailNotUnique  = errors.New("models: email address already in use")
 )
 
 const userPwPepper = "random-secret-pepper"
