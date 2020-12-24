@@ -15,14 +15,16 @@ import (
 )
 
 var (
-	ErrNotFound          = errors.New("models: resource not found")
-	ErrIDInvalid         = errors.New("models: ID provided was invalid")
-	ErrEmailRequired     = errors.New("models: email address is required")
-	ErrEmailInvalid      = errors.New("models: email address is not valid")
-	ErrEmailNotUnique    = errors.New("models: email address already in use")
-	ErrPasswordIncorrect = errors.New("models: incorrect password provided")
-	ErrPasswordTooShort  = errors.New("models: password must be 8 characters long")
-	ErrPasswordRequired  = errors.New("models: password is required")
+	ErrNotFound             = errors.New("models: resource not found")
+	ErrIDInvalid            = errors.New("models: ID provided was invalid")
+	ErrEmailRequired        = errors.New("models: email address is required")
+	ErrEmailInvalid         = errors.New("models: email address is not valid")
+	ErrEmailNotUnique       = errors.New("models: email address already in use")
+	ErrPasswordIncorrect    = errors.New("models: incorrect password provided")
+	ErrPasswordTooShort     = errors.New("models: password must be 8 characters long")
+	ErrPasswordRequired     = errors.New("models: password is required")
+	ErrSessionTokenInvalid  = errors.New("models: session token must be at least 32 bytes")
+	ErrSessionTokenRequired = errors.New("models: session token is required")
 )
 
 const userPwPepper = "random-secret-pepper"
@@ -164,6 +166,8 @@ func (uv *userValidator) Create(user *User) error {
 		uv.passwordHashRequired,
 		uv.defaultSessionToken,
 		uv.hmacSessionToken,
+		uv.sessionTokenMinBytes,
+		uv.sessionTokenHashRequired,
 		uv.normalizeEmail,
 		uv.requireEmail,
 		uv.emailFormat,
@@ -182,6 +186,8 @@ func (uv *userValidator) Update(user *User) error {
 		uv.bcryptPassword,
 		uv.passwordHashRequired,
 		uv.hmacSessionToken,
+		uv.sessionTokenMinBytes,
+		uv.sessionTokenHashRequired,
 		uv.normalizeEmail,
 		uv.requireEmail,
 		uv.emailFormat,
@@ -316,6 +322,29 @@ func (uv *userValidator) passwordRequired(user *User) error {
 func (uv *userValidator) passwordHashRequired(user *User) error {
 	if user.PasswordHash == "" {
 		return ErrPasswordRequired
+	}
+
+	return nil
+}
+
+func (uv *userValidator) sessionTokenMinBytes(user *User) error {
+	if user.SessionToken == "" {
+		return nil
+	}
+
+	n, err := rand.NBytes(user.SessionToken)
+	if err != nil {
+		return err
+	}
+	if n < 32 {
+		return ErrSessionTokenInvalid
+	}
+	return nil
+}
+
+func (uv *userValidator) sessionTokenHashRequired(user *User) error {
+	if user.SessionTokenHash == "" {
+		return ErrSessionTokenRequired
 	}
 
 	return nil
