@@ -3,6 +3,7 @@ package models
 import (
 	"errors"
 	"fmt"
+	"regexp"
 	"strings"
 
 	"learn-golang/hash"
@@ -17,6 +18,8 @@ var (
 	ErrNotFound        = errors.New("models: resource not found")
 	ErrInvalidID       = errors.New("models: ID provided was invalid")
 	ErrInvalidPassword = errors.New("models: incorrect password provided")
+	ErrEmailRequired   = errors.New("models: email address is required")
+	ErrInvalidEmail    = errors.New("models: email address is not valid")
 )
 
 const userPwPepper = "random-secret-pepper"
@@ -115,9 +118,18 @@ func runUserValFuncs(user *User, fns ...userValFunc) error {
 
 var _ UserDB = &userValidator{}
 
+func newUserValidator(udb UserDB, hmac hash.HMAC) *userValidator {
+	return &userValidator{
+		UserDB:     udb,
+		hmac:       hmac,
+		emailRegex: regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+\\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$"),
+	}
+}
+
 type userValidator struct {
 	UserDB
-	hmac hash.HMAC
+	hmac       hash.HMAC
+	emailRegex *regexp.Regexp
 }
 
 // BySession will hash the session token and then call
@@ -151,6 +163,7 @@ func (uv *userValidator) Create(user *User) error {
 		uv.hmacSessionToken,
 		uv.normalizeEmail,
 		uv.requireEmail,
+		uv.emailFormat,
 	)
 	if err != nil {
 		return err
@@ -165,6 +178,7 @@ func (uv *userValidator) Update(user *User) error {
 		uv.hmacSessionToken,
 		uv.normalizeEmail,
 		uv.requireEmail,
+		uv.emailFormat,
 	)
 	if err != nil {
 		return err
@@ -243,7 +257,17 @@ func (uv *userValidator) normalizeEmail(user *User) error {
 
 func (uv *userValidator) requireEmail(user *User) error {
 	if user.Email == "" {
-		return errors.New("Email address is required")
+		return ErrEmailRequired
+	}
+	return nil
+}
+
+func (uv *userValidator) emailFormat(user *User) error {
+	if user.Email == "" {
+		return nil
+	}
+	if !uv.emailRegex.MatchString(user.Email) {
+		return ErrInvalidEmail
 	}
 	return nil
 }
