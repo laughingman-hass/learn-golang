@@ -76,8 +76,9 @@ func signIn(w http.ResponseWriter, user *models.User, us *models.UserService) er
 	}
 
 	cookie := http.Cookie{
-		Name:  "session_token",
-		Value: user.SessionToken,
+		Name:     "session_token",
+		Value:    user.SessionToken,
+		HttpOnly: true,
 	}
 	http.SetCookie(w, &cookie)
 	return nil
