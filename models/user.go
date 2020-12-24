@@ -20,6 +20,16 @@ var (
 const userPwPepper = "random-secret-pepper"
 const hmacSecretKey = "secret-hmac-key"
 
+type User struct {
+	gorm.Model
+	Name             string
+	Email            string `gorm:"not null;unique_index"`
+	Password         string `gorm:"-"`
+	PasswordHash     string `gorm:"not null"`
+	SessionToken     string `gorm:"-"`
+	SessionTokenHash string `gorm:"not null;unique_index"`
+}
+
 type UserDB interface {
 	// query for single user
 	ByID(id uint) (*User, error)
@@ -59,52 +69,10 @@ func NewUserServices(connectionInfo string) (UserService, error) {
 	}, nil
 }
 
+var _ UserService = &userService{}
+
 type userService struct {
 	UserDB
-}
-
-type userValidator struct {
-	UserDB
-}
-
-func newUserGorm(connectionInfo string) (*userGorm, error) {
-	db, err := gorm.Open("postgres", connectionInfo)
-	if err != nil {
-		return nil, err
-	}
-	db.AutoMigrate(User{})
-	hmac := hash.NewHMAC(hmacSecretKey)
-	return &userGorm{
-		db:   db,
-		hmac: hmac,
-	}, nil
-}
-
-type userGorm struct {
-	db   *gorm.DB
-	hmac hash.HMAC
-}
-
-func (ug *userGorm) ByID(id uint) (*User, error) {
-	var user User
-	db := ug.db.Where("id = ?", id)
-	err := first(db, &user)
-	return &user, err
-}
-
-func (ug *userGorm) ByEmail(email string) (*User, error) {
-	var user User
-	db := ug.db.Where("email = ?", email)
-	err := first(db, &user)
-	return &user, err
-}
-
-func (ug *userGorm) BySession(token string) (*User, error) {
-	tokenHash := ug.hmac.Hash(token)
-	var user User
-	db := ug.db.Where("session_token_hash = ?", tokenHash)
-	err := first(db, &user)
-	return &user, err
 }
 
 func (us *userService) Authenticate(email, password string) (*User, error) {
@@ -127,13 +95,52 @@ func (us *userService) Authenticate(email, password string) (*User, error) {
 	return foundUser, nil
 }
 
-func first(db *gorm.DB, user *User) error {
-	err := db.First(user).Error
-	if err == gorm.ErrRecordNotFound {
-		return ErrNotFound
-	}
-	return err
+var _ UserDB = &userValidator{}
 
+type userValidator struct {
+	UserDB
+}
+
+var _ UserDB = &userGorm{}
+
+type userGorm struct {
+	db   *gorm.DB
+	hmac hash.HMAC
+}
+
+func newUserGorm(connectionInfo string) (*userGorm, error) {
+	db, err := gorm.Open("postgres", connectionInfo)
+	if err != nil {
+		return nil, err
+	}
+	db.AutoMigrate(User{})
+	hmac := hash.NewHMAC(hmacSecretKey)
+	return &userGorm{
+		db:   db,
+		hmac: hmac,
+	}, nil
+}
+
+func (ug *userGorm) ByID(id uint) (*User, error) {
+	var user User
+	db := ug.db.Where("id = ?", id)
+	err := first(db, &user)
+	return &user, err
+}
+
+func (ug *userGorm) ByEmail(email string) (*User, error) {
+	var user User
+	db := ug.db.Where("email = ?", email)
+	err := first(db, &user)
+	return &user, err
+}
+
+func (ug *userGorm) BySession(token string) (*User, error) {
+	tokenHash := ug.hmac.Hash(token)
+	var user User
+	db := ug.db.Where("session_token_hash = ?", tokenHash)
+	err := first(db, &user)
+	return &user, err
 }
 
 func (ug *userGorm) Create(user *User) error {
@@ -169,12 +176,11 @@ func (ug *userGorm) Close() error {
 	return ug.db.Close()
 }
 
-type User struct {
-	gorm.Model
-	Name             string
-	Email            string `gorm:"not null;unique_index"`
-	Password         string `gorm:"-"`
-	PasswordHash     string `gorm:"not null"`
-	SessionToken     string `gorm:"-"`
-	SessionTokenHash string `gorm:"not null;unique_index"`
+func first(db *gorm.DB, user *User) error {
+	err := db.First(user).Error
+	if err == gorm.ErrRecordNotFound {
+		return ErrNotFound
+	}
+	return err
+
 }
