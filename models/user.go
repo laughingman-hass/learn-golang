@@ -17,10 +17,12 @@ import (
 var (
 	ErrNotFound          = errors.New("models: resource not found")
 	ErrIDInvalid         = errors.New("models: ID provided was invalid")
-	ErrPasswordIncorrect = errors.New("models: incorrect password provided")
 	ErrEmailRequired     = errors.New("models: email address is required")
 	ErrEmailInvalid      = errors.New("models: email address is not valid")
 	ErrEmailNotUnique    = errors.New("models: email address already in use")
+	ErrPasswordIncorrect = errors.New("models: incorrect password provided")
+	ErrPasswordTooShort  = errors.New("models: password must be 8 characters long")
+	ErrPasswordRequired  = errors.New("models: password is required")
 )
 
 const userPwPepper = "random-secret-pepper"
@@ -156,7 +158,10 @@ func (uv *userValidator) Create(user *User) error {
 
 	err := runUserValFuncs(
 		user,
+		uv.passwordRequired,
+		uv.passwordMinLength,
 		uv.bcryptPassword,
+		uv.passwordHashRequired,
 		uv.defaultSessionToken,
 		uv.hmacSessionToken,
 		uv.normalizeEmail,
@@ -173,7 +178,9 @@ func (uv *userValidator) Create(user *User) error {
 func (uv *userValidator) Update(user *User) error {
 	err := runUserValFuncs(
 		user,
+		uv.passwordMinLength,
 		uv.bcryptPassword,
+		uv.passwordHashRequired,
 		uv.hmacSessionToken,
 		uv.normalizeEmail,
 		uv.requireEmail,
@@ -284,6 +291,33 @@ func (uv *userValidator) emailUnique(user *User) error {
 	if user.ID != existing.ID {
 		return ErrEmailNotUnique
 	}
+	return nil
+}
+
+func (uv *userValidator) passwordMinLength(user *User) error {
+	if user.Password == "" {
+		return nil
+	}
+
+	if len(user.Password) < 8 {
+		return ErrPasswordTooShort
+	}
+	return nil
+}
+
+func (uv *userValidator) passwordRequired(user *User) error {
+	if user.Password == "" {
+		return ErrPasswordRequired
+	}
+
+	return nil
+}
+
+func (uv *userValidator) passwordHashRequired(user *User) error {
+	if user.PasswordHash == "" {
+		return ErrPasswordRequired
+	}
+
 	return nil
 }
 
