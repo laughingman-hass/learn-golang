@@ -35,19 +35,31 @@ type UserDB interface {
 	Close() error
 }
 
-func NewUserServices(connectionInfo string) (*UserService, error) {
+// UserService is a set of methods used to manipulate and
+// work with the user model
+type UserService interface {
+	// Authenticate will verify the provided email address and
+	// password are correct. If they are correct, the user
+	// corresponding to that email will be returned. Otherwise
+	// it will return either: ErrNotFound, ErrInvalidPassword,
+	// or another error if something goes wrong.
+	Authenticate(email, password string) (*User, error)
+	UserDB
+}
+
+func NewUserServices(connectionInfo string) (UserService, error) {
 	ug, err := newUserGorm(connectionInfo)
 	if err != nil {
 		return nil, err
 	}
-	return &UserService{
+	return &userService{
 		UserDB: &userValidator{
 			UserDB: ug,
 		},
 	}, nil
 }
 
-type UserService struct {
+type userService struct {
 	UserDB
 }
 
@@ -95,7 +107,7 @@ func (ug *userGorm) BySession(token string) (*User, error) {
 	return &user, err
 }
 
-func (us *UserService) Authenticate(email, password string) (*User, error) {
+func (us *userService) Authenticate(email, password string) (*User, error) {
 	foundUser, err := us.ByEmail(email)
 	if err != nil {
 		return nil, err

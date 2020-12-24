@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-func NewUsers(us *models.UserService) *UsersController {
+func NewUsers(us models.UserService) *UsersController {
 	return &UsersController{
 		NewView: views.NewView("bootstrap", "users/new"),
 		us:      us,
@@ -16,7 +16,7 @@ func NewUsers(us *models.UserService) *UsersController {
 
 type UsersController struct {
 	NewView *views.View
-	us      *models.UserService
+	us      models.UserService
 }
 
 type Signupform struct {

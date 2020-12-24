@@ -9,7 +9,7 @@ import (
 	"learn-golang/rand"
 )
 
-func NewSession(us *models.UserService) *SessionsController {
+func NewSession(us models.UserService) *SessionsController {
 	return &SessionsController{
 		NewView: views.NewView("bootstrap", "sessions/new"),
 		us:      us,
@@ -18,7 +18,7 @@ func NewSession(us *models.UserService) *SessionsController {
 
 type SessionsController struct {
 	NewView *views.View
-	us      *models.UserService
+	us      models.UserService
 }
 
 func (sc *SessionsController) New(w http.ResponseWriter, r *http.Request) {
@@ -62,7 +62,7 @@ type SessionParams struct {
 	Password string `schema:"password"`
 }
 
-func signIn(w http.ResponseWriter, user *models.User, us *models.UserService) error {
+func signIn(w http.ResponseWriter, user *models.User, us models.UserService) error {
 	if user.SessionToken == "" {
 		token, err := rand.NewSessionToken()
 		if err != nil {
