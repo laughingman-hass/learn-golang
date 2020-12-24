@@ -70,10 +70,7 @@ func NewUserServices(connectionInfo string) (UserService, error) {
 	}
 
 	hmac := hash.NewHMAC(hmacSecretKey)
-	uv := &userValidator{
-		hmac:   hmac,
-		UserDB: ug,
-	}
+	uv := newUserValidator(ug, hmac)
 
 	return &userService{
 		UserDB: uv,
@@ -142,7 +139,7 @@ func (uv *userValidator) BySession(token string) (*User, error) {
 	if err := runUserValFuncs(&user, uv.hmacSessionToken); err != nil {
 		return nil, err
 	}
-	return uv.UserDB.BySession(user.SessionToken)
+	return uv.UserDB.BySession(user.SessionTokenHash)
 }
 
 func (uv *userValidator) ByEmail(email string) (*User, error) {
@@ -165,6 +162,7 @@ func (uv *userValidator) Create(user *User) error {
 		uv.normalizeEmail,
 		uv.requireEmail,
 		uv.emailFormat,
+		uv.emailUnique,
 	)
 	if err != nil {
 		return err
@@ -180,6 +178,7 @@ func (uv *userValidator) Update(user *User) error {
 		uv.normalizeEmail,
 		uv.requireEmail,
 		uv.emailFormat,
+		uv.emailUnique,
 	)
 	if err != nil {
 		return err
@@ -269,6 +268,21 @@ func (uv *userValidator) emailFormat(user *User) error {
 	}
 	if !uv.emailRegex.MatchString(user.Email) {
 		return ErrInvalidEmail
+	}
+	return nil
+}
+
+func (uv *userValidator) emailUnique(user *User) error {
+	existing, err := uv.ByEmail(user.Email)
+	if err == ErrNotFound {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+
+	if user.ID != existing.ID {
+		return ErrEmailNotUnique
 	}
 	return nil
 }
