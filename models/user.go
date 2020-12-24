@@ -132,15 +132,8 @@ func (uv *userValidator) BySession(token string) (*User, error) {
 }
 
 func (uv *userValidator) Create(user *User) error {
-	if user.SessionToken == "" {
-		token, err := rand.NewSessionToken()
-		if err != nil {
-			return err
-		}
-		user.SessionToken = token
-	}
 
-	err := runUserValFuncs(user, uv.bcryptPassword, uv.hmacSessionToken)
+	err := runUserValFuncs(user, uv.bcryptPassword, uv.defaultSessionToken, uv.hmacSessionToken)
 	if err != nil {
 		return err
 	}
@@ -191,6 +184,18 @@ func (uv *userValidator) hmacSessionToken(user *User) error {
 		return nil
 	}
 	user.SessionTokenHash = uv.hmac.Hash(user.SessionToken)
+	return nil
+}
+
+func (uv *userValidator) defaultSessionToken(user *User) error {
+	if user.SessionToken != "" {
+		return nil
+	}
+	token, err := rand.NewSessionToken()
+	if err != nil {
+		return err
+	}
+	user.SessionToken = token
 	return nil
 }
 
