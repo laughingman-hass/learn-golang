@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"learn-golang/hash"
+	"learn-golang/rand"
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
@@ -121,24 +122,35 @@ type userValidator struct {
 // BySession will hash the session token and then call
 // BySession on the subsequent UserDB layer.
 func (uv *userValidator) BySession(token string) (*User, error) {
-	tokenHash := uv.hmac.Hash(token)
-	return uv.UserDB.BySession(tokenHash)
+	user := User{
+		SessionToken: token,
+	}
+	if err := runUserValFuncs(&user, uv.hmacSessionToken); err != nil {
+		return nil, err
+	}
+	return uv.UserDB.BySession(user.SessionToken)
 }
 
 func (uv *userValidator) Create(user *User) error {
-	if err := runUserValFuncs(user, uv.bcryptPassword); err != nil {
-		return err
+	if user.SessionToken == "" {
+		token, err := rand.NewSessionToken()
+		if err != nil {
+			return err
+		}
+		user.SessionToken = token
 	}
 
-	if user.SessionToken != "" {
-		user.SessionTokenHash = uv.hmac.Hash(user.SessionToken)
+	err := runUserValFuncs(user, uv.bcryptPassword, uv.hmacSessionToken)
+	if err != nil {
+		return err
 	}
 	return uv.UserDB.Create(user)
 }
 
 func (uv *userValidator) Update(user *User) error {
-	if user.SessionToken != "" {
-		user.SessionTokenHash = uv.hmac.Hash(user.SessionToken)
+	err := runUserValFuncs(user, uv.bcryptPassword, uv.hmacSessionToken)
+	if err != nil {
+		return err
 	}
 	return uv.UserDB.Update(user)
 }
@@ -171,6 +183,14 @@ func (uv *userValidator) bcryptPassword(user *User) error {
 	}
 	user.PasswordHash = string(hashedBytes)
 	user.Password = ""
+	return nil
+}
+
+func (uv *userValidator) hmacSessionToken(user *User) error {
+	if user.SessionToken == "" {
+		return nil
+	}
+	user.SessionTokenHash = uv.hmac.Hash(user.SessionToken)
 	return nil
 }
 
