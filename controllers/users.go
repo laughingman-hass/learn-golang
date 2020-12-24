@@ -50,16 +50,23 @@ func (uc *UsersController) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	signIn(w, &user)
+	if err := signIn(w, &user, uc.us); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 	http.Redirect(w, r, "/cookietest", http.StatusFound)
 }
 
 func (uc *UsersController) CookieTest(w http.ResponseWriter, r *http.Request) {
-	cookie, err := r.Cookie("email")
+	cookie, err := r.Cookie("session_token")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 
-	fmt.Fprintln(w, "Email is:", cookie.Value)
-	fmt.Fprintln(w, cookie)
+	user, err := uc.us.BySession(cookie.Value)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	fmt.Fprintln(w, user)
 }

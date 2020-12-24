@@ -5,6 +5,8 @@ import (
 	"learn-golang/models"
 	"learn-golang/views"
 	"net/http"
+
+	"learn-golang/rand"
 )
 
 func NewSession(us *models.UserService) *SessionsController {
@@ -47,7 +49,10 @@ func (sc *SessionsController) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	signIn(w, user)
+	if err = signIn(w, user, sc.us); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	http.Redirect(w, r, "/cookietest", http.StatusFound)
 }
@@ -57,10 +62,23 @@ type SessionParams struct {
 	Password string `schema:"password"`
 }
 
-func signIn(w http.ResponseWriter, user *models.User) {
+func signIn(w http.ResponseWriter, user *models.User, us *models.UserService) error {
+	if user.SessionToken == "" {
+		token, err := rand.NewSessionToken()
+		if err != nil {
+			return err
+		}
+		user.SessionToken = token
+		err = us.Update(user)
+		if err != nil {
+			return err
+		}
+	}
+
 	cookie := http.Cookie{
-		Name:  "email",
-		Value: user.Email,
+		Name:  "session_token",
+		Value: user.SessionToken,
 	}
 	http.SetCookie(w, &cookie)
+	return nil
 }
