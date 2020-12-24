@@ -98,15 +98,15 @@ func (us *UserService) Create(user *User) error {
 	}
 	user.PasswordHash = string(hashedBytes)
 	user.Password = ""
-	if user.Session != "" {
-		user.SessionTokenHash = us.hmac.Hash(user.Session)
+	if user.SessionToken != "" {
+		user.SessionTokenHash = us.hmac.Hash(user.SessionToken)
 	}
 	return us.db.Create(user).Error
 }
 
 func (us *UserService) Update(user *User) error {
-	if user.Session != "" {
-		user.SessionTokenHash = us.hmac.Hash(user.Session)
+	if user.SessionToken != "" {
+		user.SessionTokenHash = us.hmac.Hash(user.SessionToken)
 	}
 	return us.db.Save(user).Error
 }
@@ -129,6 +129,6 @@ type User struct {
 	Email            string `gorm:"not null;unique_index"`
 	Password         string `gorm:"-"`
 	PasswordHash     string `gorm:"not null"`
-	Session          string `gorm:"-"`
+	SessionToken     string `gorm:"-"`
 	SessionTokenHash string `gorm:"not null;unique_index"`
 }

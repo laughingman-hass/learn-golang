@@ -5,7 +5,7 @@ import (
 	"encoding/base64"
 )
 
-const RememberTokenBytes = 32
+const SessionTokenBytes = 32
 
 func Bytes(n int) ([]byte, error) {
 	b := make([]byte, n)
@@ -28,6 +28,6 @@ func String(nBytes int) (string, error) {
 	return base64.URLEncoding.EncodeToString(b), nil
 }
 
-func RememberToken() (string, error) {
-	return String(RememberTokenBytes)
+func NewSessionToken() (string, error) {
+	return String(SessionTokenBytes)
 }
