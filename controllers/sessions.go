@@ -23,9 +23,7 @@ type SessionsController struct {
 
 func (sc *SessionsController) New(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
-	if err := sc.NewView.Render(w, nil); err != nil {
-		panic(err)
-	}
+	sc.NewView.Render(w, nil)
 }
 
 func (sc *SessionsController) Create(w http.ResponseWriter, r *http.Request) {

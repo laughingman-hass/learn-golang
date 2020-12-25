@@ -28,9 +28,7 @@ type Signupform struct {
 
 func (uc UsersController) New(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
-	if err := uc.NewView.Render(w, nil); err != nil {
-		panic(err)
-	}
+	uc.NewView.Render(w, nil)
 }
 
 func (uc *UsersController) Create(w http.ResponseWriter, r *http.Request) {
