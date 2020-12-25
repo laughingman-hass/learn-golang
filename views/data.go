@@ -1,10 +1,12 @@
 package views
 
 const (
-    AlertLevelError = "danger"
-    AlertLevelWarning = "warning"
-    AlertLevelInfo = "info"
-    AlertLevelSuccess = "success"
+	AlertLevelError   = "danger"
+	AlertLevelWarning = "warning"
+	AlertLevelInfo    = "info"
+	AlertLevelSuccess = "success"
+
+	AlertMessageGeneric = "Something went wrong. Please try again, and contact us if the problem persists."
 )
 
 type Alert struct {
