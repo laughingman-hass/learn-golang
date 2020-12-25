@@ -1,7 +1,6 @@
 package models
 
 import (
-	"errors"
 	"fmt"
 	"regexp"
 	"strings"
@@ -12,19 +11,6 @@ import (
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"golang.org/x/crypto/bcrypt"
-)
-
-var (
-	ErrNotFound             = errors.New("models: resource not found")
-	ErrIDInvalid            = errors.New("models: ID provided was invalid")
-	ErrEmailRequired        = errors.New("models: email address is required")
-	ErrEmailInvalid         = errors.New("models: email address is not valid")
-	ErrEmailNotUnique       = errors.New("models: email address already in use")
-	ErrPasswordIncorrect    = errors.New("models: incorrect password provided")
-	ErrPasswordTooShort     = errors.New("models: password must be 8 characters long")
-	ErrPasswordRequired     = errors.New("models: password is required")
-	ErrSessionTokenInvalid  = errors.New("models: session token must be at least 32 bytes")
-	ErrSessionTokenRequired = errors.New("models: session token is required")
 )
 
 const userPwPepper = "random-secret-pepper"
