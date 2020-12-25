@@ -157,7 +157,6 @@ func (uv *userValidator) ByEmail(email string) (*User, error) {
 }
 
 func (uv *userValidator) Create(user *User) error {
-
 	err := runUserValFuncs(
 		user,
 		uv.passwordRequired,
