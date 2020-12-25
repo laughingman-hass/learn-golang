@@ -25,10 +25,14 @@ func (d *Data) SetAlert(err error) {
 			Message: publicErr.Public(),
 		}
 	} else {
-		d.Alert = &Alert{
-			Level:   AlertLevelError,
-			Message: AlertMessageGeneric,
-		}
+		d.AlertError(AlertMessageGeneric)
+	}
+}
+
+func (d *Data) AlertError(msg string) {
+	d.Alert = &Alert{
+		Level:   AlertLevelError,
+		Message: msg,
 	}
 }
 

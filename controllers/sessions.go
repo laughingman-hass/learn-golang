@@ -1,9 +1,9 @@
 package controllers
 
 import (
-	"fmt"
 	"learn-golang/models"
 	"learn-golang/views"
+	"log"
 	"net/http"
 
 	"learn-golang/rand"
@@ -29,28 +29,31 @@ func (sc *SessionsController) New(w http.ResponseWriter, r *http.Request) {
 }
 
 func (sc *SessionsController) Create(w http.ResponseWriter, r *http.Request) {
+	vd := views.Data{}
 	form := SessionParams{}
+
 	if err := parseForm(&form, r); err != nil {
-		panic(err)
+		log.Println(err)
+		vd.SetAlert(err)
+		sc.NewView.Render(w, vd)
+		return
 	}
 
 	user, err := sc.us.Authenticate(form.Email, form.Password)
 	if err != nil {
 		switch err {
 		case models.ErrNotFound:
-			fmt.Fprintln(w, "Invalid email address")
-		case models.ErrPasswordIncorrect:
-			fmt.Fprintln(w, "Invalid password provided")
-		case nil:
-			fmt.Fprintln(w, user)
+			vd.AlertError("Invalid email address")
 		default:
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			vd.SetAlert(err)
 		}
+		sc.NewView.Render(w, vd)
 		return
 	}
 
 	if err = signIn(w, user, sc.us); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		log.Println(err)
+		vd.SetAlert(err)
 		return
 	}
 
