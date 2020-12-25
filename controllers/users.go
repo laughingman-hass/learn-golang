@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"learn-golang/models"
 	"learn-golang/views"
+	"log"
 	"net/http"
 )
 
@@ -33,10 +34,19 @@ func (uc UsersController) New(w http.ResponseWriter, r *http.Request) {
 }
 
 func (uc *UsersController) Create(w http.ResponseWriter, r *http.Request) {
-	var form Signupform
+	var (
+		form Signupform
+		vd   views.Data
+	)
 
 	if err := parseForm(&form, r); err != nil {
-		panic(err)
+		log.Println(err)
+		vd.Alert = &views.Alert{
+			Level:   views.AlertLevelError,
+			Message: views.AlertMessageGeneric,
+		}
+		uc.NewView.Render(w, vd)
+		return
 	}
 
 	user := models.User{
@@ -46,12 +56,16 @@ func (uc *UsersController) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := uc.us.Create(&user); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		vd.Alert = &views.Alert{
+			Level:   views.AlertLevelError,
+			Message: err.Error(),
+		}
+		uc.NewView.Render(w, vd)
 		return
 	}
 
 	if err := signIn(w, &user, uc.us); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Redirect(w, r, "/login", http.StatusFound)
 		return
 	}
 	http.Redirect(w, r, "/cookietest", http.StatusFound)
