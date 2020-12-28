@@ -19,12 +19,14 @@ const (
 
 func main() {
 	connectionInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
-	us, err := models.NewUserServices(connectionInfo)
+	services, err := models.NewServices(connectionInfo)
 	must(err)
-	defer us.Close()
+    // TODO: move this to services
+	// defer us.Close()
+
 	staticController := controllers.NewStatic()
-	usersController := controllers.NewUsers(us)
-	sessionsController := controllers.NewSession(us)
+	usersController := controllers.NewUsers(services.User)
+	sessionsController := controllers.NewSession(services.User)
 
 	r := mux.NewRouter()
 	r.NotFoundHandler = http.Handler(staticController.NotFound)

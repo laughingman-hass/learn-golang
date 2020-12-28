@@ -53,18 +53,14 @@ type UserService interface {
 	UserDB
 }
 
-func NewUserServices(connectionInfo string) (UserService, error) {
-	ug, err := newUserGorm(connectionInfo)
-	if err != nil {
-		return nil, err
-	}
-
+func NewUserServices(db *gorm.DB) UserService {
+	ug := &userGorm{db}
 	hmac := hash.NewHMAC(hmacSecretKey)
 	uv := newUserValidator(ug, hmac)
 
 	return &userService{
 		UserDB: uv,
-	}, nil
+	}
 }
 
 var _ UserService = &userService{}
@@ -333,17 +329,6 @@ func (uv *userValidator) sessionTokenHashRequired(user *User) error {
 	}
 
 	return nil
-}
-
-func newUserGorm(connectionInfo string) (*userGorm, error) {
-	db, err := gorm.Open("postgres", connectionInfo)
-	if err != nil {
-		return nil, err
-	}
-	db.AutoMigrate(User{})
-	return &userGorm{
-		db: db,
-	}, nil
 }
 
 // Query the database for a User by an ID
