@@ -21,8 +21,9 @@ func main() {
 	connectionInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
 	services, err := models.NewServices(connectionInfo)
 	must(err)
-    // TODO: move this to services
-	// defer us.Close()
+	defer services.Close()
+
+	services.AutoMigrate()
 
 	staticController := controllers.NewStatic()
 	usersController := controllers.NewUsers(services.User)

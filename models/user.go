@@ -36,9 +36,6 @@ type UserDB interface {
 	Create(user *User) error
 	Update(user *User) error
 	Delete(id uint) error
-
-	// close a DB connection
-	Close() error
 }
 
 // UserService is a set of methods used to manipulate and
@@ -366,10 +363,6 @@ func (ug *userGorm) Update(user *User) error {
 func (ug *userGorm) Delete(id uint) error {
 	user := User{Model: gorm.Model{ID: id}}
 	return ug.db.Delete(&user).Error
-}
-
-func (ug *userGorm) Close() error {
-	return ug.db.Close()
 }
 
 func first(db *gorm.DB, user *User) error {

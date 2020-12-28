@@ -9,14 +9,42 @@ func NewServices(connectionInfo string) (*Services, error) {
 	}
 	db.LogMode(true)
 
-	db.AutoMigrate(User{})
-
 	return &Services{
 		User: NewUserServices(db),
+		db:   db,
 	}, nil
 }
 
 type Services struct {
 	Gallery GalleryService
 	User    UserService
+	db      *gorm.DB
+}
+
+func (s *Services) Close() error {
+	return s.db.Close()
+}
+
+func (s *Services) DestructiveReset() error {
+	err := s.db.DropTableIfExists(
+		&User{},
+		&Gallery{},
+	).Error
+
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *Services) AutoMigrate() error {
+	err := s.db.AutoMigrate(
+		&User{},
+		&Gallery{},
+	).Error
+
+	if err != nil {
+		return err
+	}
+	return nil
 }
