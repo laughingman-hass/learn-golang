@@ -18,9 +18,9 @@ type GalleryDB interface {
 
 func NewGalleryService(db *gorm.DB) GalleryService {
 	return &galleryService{
-        GalleryDB: &galleryValidator{
-            &galleryGorm{db},
-        },
+		GalleryDB: &galleryValidator{
+			&galleryGorm{db},
+		},
 	}
 }
 
