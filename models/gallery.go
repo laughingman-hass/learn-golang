@@ -1,6 +1,10 @@
 package models
 
-import "github.com/jinzhu/gorm"
+import (
+	"log"
+
+	"github.com/jinzhu/gorm"
+)
 
 type Gallery struct {
 	gorm.Model
@@ -28,8 +32,48 @@ type galleryService struct {
 	GalleryDB
 }
 
+type galleryValFunc func(*Gallery) error
+
+func runGalleryValFuncs(gallery *Gallery, fns ...galleryValFunc) error {
+	for _, fn := range fns {
+		if err := fn(gallery); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+var _ GalleryDB = &galleryValidator{}
+
 type galleryValidator struct {
 	GalleryDB
+}
+
+func (gv *galleryValidator) Create(gallery *Gallery) error {
+	err := runGalleryValFuncs(
+		gallery,
+		gv.titleRequired,
+		gv.userIDRequried,
+	)
+	if err != nil {
+		return err
+	}
+	return gv.GalleryDB.Create(gallery)
+}
+
+func (gv *galleryValidator) userIDRequried(g *Gallery) error {
+	log.Println("validating user id")
+	if g.UserID <= 0 {
+		return ErrUserIDRequired
+	}
+	return nil
+}
+
+func (gv *galleryValidator) titleRequired(g *Gallery) error {
+	if g.Title == "" {
+		return ErrTitleRequired
+	}
+	return nil
 }
 
 var _ GalleryDB = &galleryGorm{}

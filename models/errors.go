@@ -10,10 +10,12 @@ var (
 	ErrPasswordIncorrect modelError = "models: incorrect password provided"
 	ErrPasswordTooShort  modelError = "models: password must be 8 characters long"
 	ErrPasswordRequired  modelError = "models: password is required"
+	ErrTitleRequired     modelError = "models: title is required"
 
 	ErrIDInvalid            privateError = "models: ID provided was invalid"
 	ErrSessionTokenInvalid  privateError = "models: session token must be at least 32 bytes"
 	ErrSessionTokenRequired privateError = "models: session token is required"
+	ErrUserIDRequired       privateError = "models: user ID is required"
 )
 
 type modelError string
