@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+	"learn-golang/context"
 	"learn-golang/models"
 	"learn-golang/views"
 	"log"
@@ -37,8 +38,11 @@ func (gc *GalleriesController) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	user := context.User(r.Context())
+
 	gallery := models.Gallery{
-		Title: form.Title,
+		Title:  form.Title,
+		UserID: user.ID,
 	}
 
 	if err := gc.gs.Create(&gallery); err != nil {
