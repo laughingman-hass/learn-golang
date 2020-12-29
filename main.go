@@ -56,6 +56,8 @@ func main() {
 	r.HandleFunc("/login", sessionsController.Create).Methods("POST")
 
 	// Gallery routes
+	r.HandleFunc("/galleries", requireSessionMW.ApplyFn(galleriesController.Index)).
+		Methods("GET")
 	r.Handle("/galleries/new", requireSessionMW.Apply(galleriesController.New)).Methods("GET")
 	r.HandleFunc("/galleries", requireSessionMW.ApplyFn(galleriesController.Create)).Methods("POST")
 	r.HandleFunc("/galleries/{id:[0-9]+}", requireSessionMW.ApplyFn(galleriesController.Show)).
