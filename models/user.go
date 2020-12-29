@@ -364,12 +364,3 @@ func (ug *userGorm) Delete(id uint) error {
 	user := User{Model: gorm.Model{ID: id}}
 	return ug.db.Delete(&user).Error
 }
-
-func first(db *gorm.DB, user *User) error {
-	err := db.First(user).Error
-	if err == gorm.ErrRecordNotFound {
-		return ErrNotFound
-	}
-	return err
-
-}

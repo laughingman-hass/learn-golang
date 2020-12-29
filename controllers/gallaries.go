@@ -7,22 +7,55 @@ import (
 	"learn-golang/views"
 	"log"
 	"net/http"
+	"strconv"
+
+	"github.com/gorilla/mux"
 )
 
-func NewGalleries(gs models.GalleryService) *GalleriesController {
+func NewGalleries(gs models.GalleryService, r *mux.Router) *GalleriesController {
 	return &GalleriesController{
-		New: views.NewView("bootstrap", "galleries/new"),
-		gs:  gs,
+		New:      views.NewView("bootstrap", "galleries/new"),
+		ShowView: views.NewView("bootstrap", "galleries/show"),
+		gs:       gs,
+		r:        r,
 	}
 }
 
 type GalleriesController struct {
-	New *views.View
-	gs  models.GalleryService
+	New      *views.View
+	ShowView *views.View
+	gs       models.GalleryService
+	r        *mux.Router
 }
 
 type GalleryForm struct {
 	Title string `schema:"title"`
+}
+
+func (gc *GalleriesController) Show(w http.ResponseWriter, r *http.Request) {
+	var vd views.Data
+
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		http.Error(w, "Invalid gallery ID", http.StatusNotFound)
+		return
+	}
+
+	gallery, err := gc.gs.ByID(uint(id))
+	if err != nil {
+		switch err {
+		case models.ErrNotFound:
+			http.Error(w, "Gallery Not Found", http.StatusNotFound)
+			return
+		default:
+			http.Error(w, "Opps! Something went wrong", http.StatusInternalServerError)
+			return
+		}
+	}
+
+	vd.Yield = gallery
+	gc.ShowView.Render(w, vd)
 }
 
 func (gc *GalleriesController) Create(w http.ResponseWriter, r *http.Request) {
@@ -50,6 +83,10 @@ func (gc *GalleriesController) Create(w http.ResponseWriter, r *http.Request) {
 		gc.New.Render(w, vd)
 		return
 	}
-
-	fmt.Fprintln(w, gallery)
+	url, err := gc.r.Get("gallery").URL("id", fmt.Sprintf("%v", gallery.ID))
+	if err != nil {
+		http.Redirect(w, r, "/", http.StatusFound)
+		return
+	}
+	http.Redirect(w, r, url.Path, http.StatusFound)
 }

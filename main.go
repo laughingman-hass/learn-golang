@@ -26,6 +26,7 @@ func main() {
 
 	services.AutoMigrate()
 
+	r := mux.NewRouter()
 	requireSessionMW := middleware.RequireSession{
 		UserService: services.User,
 	}
@@ -33,9 +34,8 @@ func main() {
 	staticController := controllers.NewStatic()
 	usersController := controllers.NewUsers(services.User)
 	sessionsController := controllers.NewSession(services.User)
-	galleriesController := controllers.NewGalleries(services.Gallery)
+	galleriesController := controllers.NewGalleries(services.Gallery, r)
 
-	r := mux.NewRouter()
 	r.NotFoundHandler = http.Handler(staticController.NotFound)
 
 	r.Handle("/", staticController.Home).Methods("GET")
@@ -51,6 +51,7 @@ func main() {
 	// Gallery routes
 	r.Handle("/galleries/new", requireSessionMW.Apply(galleriesController.New)).Methods("GET")
 	r.HandleFunc("/galleries", requireSessionMW.ApplyFn(galleriesController.Create)).Methods("POST")
+	r.HandleFunc("/galleries/{id:[0-9]+}", requireSessionMW.ApplyFn(galleriesController.Show)).Methods("GET").Name("gallery")
 
 	http.ListenAndServe(":3000", r)
 }
