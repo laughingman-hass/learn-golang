@@ -66,12 +66,14 @@ func (uc *UsersController) Create(w http.ResponseWriter, r *http.Request) {
 func (uc *UsersController) CookieTest(w http.ResponseWriter, r *http.Request) {
 	cookie, err := r.Cookie("session_token")
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return
 	}
 
 	user, err := uc.us.BySession(cookie.Value)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Redirect(w, r, "/login", http.StatusFound)
+		return
 	}
 
 	fmt.Fprintln(w, user)

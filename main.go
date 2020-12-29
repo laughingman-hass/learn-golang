@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"learn-golang/controllers"
+	"learn-golang/middleware"
 	"learn-golang/models"
 	"net/http"
 
@@ -25,6 +26,10 @@ func main() {
 
 	services.AutoMigrate()
 
+	requireSessionMW := middleware.RequireSession{
+		UserService: services.User,
+	}
+
 	staticController := controllers.NewStatic()
 	usersController := controllers.NewUsers(services.User)
 	sessionsController := controllers.NewSession(services.User)
@@ -44,8 +49,8 @@ func main() {
 	r.HandleFunc("/login", sessionsController.Create).Methods("POST")
 
 	// Gallery routes
-	r.Handle("/galleries/new", galleriesController.New).Methods("GET")
-	r.HandleFunc("/galleries", galleriesController.Create).Methods("POST")
+	r.Handle("/galleries/new", requireSessionMW.Apply(galleriesController.New)).Methods("GET")
+	r.HandleFunc("/galleries", requireSessionMW.ApplyFn(galleriesController.Create)).Methods("POST")
 
 	http.ListenAndServe(":3000", r)
 }
