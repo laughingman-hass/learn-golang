@@ -3,7 +3,6 @@ package middleware
 import (
 	"learn-golang/context"
 	"learn-golang/models"
-	"log"
 	"net/http"
 )
 
@@ -33,7 +32,6 @@ func (mw *RequireSession) ApplyFn(next http.HandlerFunc) http.HandlerFunc {
 		ctx = context.WithUser(ctx, user)
 		r = r.WithContext(ctx)
 
-		log.Println("Logged in as: ", user)
 		next(w, r)
 	})
 }
