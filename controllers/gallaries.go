@@ -36,32 +36,6 @@ type GalleryForm struct {
 	Title string `schema:"title"`
 }
 
-func (gc *GalleriesController) Show(w http.ResponseWriter, r *http.Request) {
-	var vd views.Data
-
-	vars := mux.Vars(r)
-	id, err := strconv.Atoi(vars["id"])
-	if err != nil {
-		http.Error(w, "Invalid gallery ID", http.StatusNotFound)
-		return
-	}
-
-	gallery, err := gc.gs.ByID(uint(id))
-	if err != nil {
-		switch err {
-		case models.ErrNotFound:
-			http.Error(w, "Gallery Not Found", http.StatusNotFound)
-			return
-		default:
-			http.Error(w, "Opps! Something went wrong", http.StatusInternalServerError)
-			return
-		}
-	}
-
-	vd.Yield = gallery
-	gc.ShowView.Render(w, vd)
-}
-
 func (gc *GalleriesController) Create(w http.ResponseWriter, r *http.Request) {
 	var (
 		form GalleryForm
@@ -93,4 +67,30 @@ func (gc *GalleriesController) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	http.Redirect(w, r, url.Path, http.StatusFound)
+}
+
+func (gc *GalleriesController) Show(w http.ResponseWriter, r *http.Request) {
+	var vd views.Data
+
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		http.Error(w, "Invalid gallery ID", http.StatusNotFound)
+		return
+	}
+
+	gallery, err := gc.gs.ByID(uint(id))
+	if err != nil {
+		switch err {
+		case models.ErrNotFound:
+			http.Error(w, "Gallery Not Found", http.StatusNotFound)
+			return
+		default:
+			http.Error(w, "Opps! Something went wrong", http.StatusInternalServerError)
+			return
+		}
+	}
+
+	vd.Yield = gallery
+	gc.ShowView.Render(w, vd)
 }
