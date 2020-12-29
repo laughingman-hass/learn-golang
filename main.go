@@ -52,6 +52,7 @@ func main() {
 	r.Handle("/galleries/new", requireSessionMW.Apply(galleriesController.New)).Methods("GET")
 	r.HandleFunc("/galleries", requireSessionMW.ApplyFn(galleriesController.Create)).Methods("POST")
 	r.HandleFunc("/galleries/{id:[0-9]+}", requireSessionMW.ApplyFn(galleriesController.Show)).Methods("GET").Name(controllers.GalleryPath)
+	r.HandleFunc("/galleries/{id:[0-9]+}/edit", requireSessionMW.ApplyFn(galleriesController.Edit)).Methods("GET").Name(controllers.EditGalleryPath)
 
 	http.ListenAndServe(":3000", r)
 }
