@@ -16,6 +16,7 @@ const (
 	GalleryPath       = "gallery"
 	EditGalleryPath   = "editGallery"
 	UpdateGalleryPath = "updateGallery"
+	DeleteGalleryPath = "deleteGallery"
 )
 
 func NewGalleries(gs models.GalleryService, r *mux.Router) *GalleriesController {
@@ -141,6 +142,33 @@ func (gc *GalleriesController) Update(w http.ResponseWriter, r *http.Request) {
 		Message: "Gallery successfully updated!",
 	}
 	gc.ShowView.Render(w, vd)
+}
+
+func (gc *GalleriesController) Delete(w http.ResponseWriter, r *http.Request) {
+	var (
+		vd views.Data
+	)
+	gallery, err := gc.galleryByID(w, r)
+	if err != nil {
+		return
+	}
+
+	user := context.User(r.Context())
+	if gallery.UserID != user.ID {
+		http.Error(w, "Gallery not found", http.StatusNotFound)
+		return
+	}
+
+	err = gc.gs.Delete(gallery.ID)
+	if err != nil {
+		vd.SetAlert(err)
+		vd.Yield = gallery
+		gc.EditView.Render(w, vd)
+		return
+	}
+
+	// TODO: redirect to Gallery index
+	fmt.Fprintln(w, "successfully deleted gallery")
 }
 
 func (gc *GalleriesController) galleryByID(w http.ResponseWriter, r *http.Request) (*models.Gallery, error) {
