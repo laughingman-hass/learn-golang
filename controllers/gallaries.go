@@ -12,6 +12,10 @@ import (
 	"github.com/gorilla/mux"
 )
 
+const (
+	GalleryPath = "gallery"
+)
+
 func NewGalleries(gs models.GalleryService, r *mux.Router) *GalleriesController {
 	return &GalleriesController{
 		New:      views.NewView("bootstrap", "galleries/new"),
@@ -83,7 +87,7 @@ func (gc *GalleriesController) Create(w http.ResponseWriter, r *http.Request) {
 		gc.New.Render(w, vd)
 		return
 	}
-	url, err := gc.r.Get("gallery").URL("id", fmt.Sprintf("%v", gallery.ID))
+	url, err := gc.r.Get(GalleryPath).URL("id", fmt.Sprintf("%v", gallery.ID))
 	if err != nil {
 		http.Redirect(w, r, "/", http.StatusFound)
 		return
