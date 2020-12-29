@@ -19,7 +19,14 @@ const (
 )
 
 func main() {
-	connectionInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+	connectionInfo := fmt.Sprintf(
+		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+		host,
+		port,
+		user,
+		password,
+		dbname,
+	)
 	services, err := models.NewServices(connectionInfo)
 	must(err)
 	defer services.Close()
@@ -51,8 +58,15 @@ func main() {
 	// Gallery routes
 	r.Handle("/galleries/new", requireSessionMW.Apply(galleriesController.New)).Methods("GET")
 	r.HandleFunc("/galleries", requireSessionMW.ApplyFn(galleriesController.Create)).Methods("POST")
-	r.HandleFunc("/galleries/{id:[0-9]+}", requireSessionMW.ApplyFn(galleriesController.Show)).Methods("GET").Name(controllers.GalleryPath)
-	r.HandleFunc("/galleries/{id:[0-9]+}/edit", requireSessionMW.ApplyFn(galleriesController.Edit)).Methods("GET").Name(controllers.EditGalleryPath)
+	r.HandleFunc("/galleries/{id:[0-9]+}", requireSessionMW.ApplyFn(galleriesController.Show)).
+		Methods("GET").
+		Name(controllers.GalleryPath)
+	r.HandleFunc("/galleries/{id:[0-9]+}/edit", requireSessionMW.ApplyFn(galleriesController.Edit)).
+		Methods("GET").
+		Name(controllers.EditGalleryPath)
+	r.HandleFunc("/galleries/{id:[0-9]+}/update", requireSessionMW.ApplyFn(galleriesController.Update)).
+		Methods("POST").
+		Name(controllers.UpdateGalleryPath)
 
 	http.ListenAndServe(":3000", r)
 }

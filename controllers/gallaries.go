@@ -13,8 +13,9 @@ import (
 )
 
 const (
-	GalleryPath     = "gallery"
-	EditGalleryPath = "editGallery"
+	GalleryPath       = "gallery"
+	EditGalleryPath   = "editGallery"
+	UpdateGalleryPath = "updateGallery"
 )
 
 func NewGalleries(gs models.GalleryService, r *mux.Router) *GalleriesController {
@@ -100,6 +101,36 @@ func (gc *GalleriesController) Show(w http.ResponseWriter, r *http.Request) {
 
 	vd.Yield = gallery
 	gc.ShowView.Render(w, vd)
+}
+
+func (gc *GalleriesController) Update(w http.ResponseWriter, r *http.Request) {
+	var (
+		vd   views.Data
+		form GalleryForm
+	)
+
+	gallery, err := gc.galleryByID(w, r)
+	if err != nil {
+		return
+	}
+
+	user := context.User(r.Context())
+	if gallery.UserID != user.ID {
+		http.Error(w, "Gallery not found", http.StatusNotFound)
+		return
+	}
+
+	vd.Yield = gallery
+
+	if err := parseForm(&form, r); err != nil {
+		log.Println(err)
+		vd.SetAlert(err)
+		gc.EditView.Render(w, vd)
+		return
+	}
+
+	gallery.Title = form.Title
+	gc.gs.Update()
 }
 
 func (gc *GalleriesController) galleryByID(w http.ResponseWriter, r *http.Request) (*models.Gallery, error) {
