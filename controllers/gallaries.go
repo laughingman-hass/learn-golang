@@ -55,7 +55,7 @@ func (gc *GalleriesController) Index(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	vd.Yield = galleries
-	gc.IndexView.Render(w, vd)
+	gc.IndexView.Render(w, r, vd)
 }
 
 func (gc *GalleriesController) Create(w http.ResponseWriter, r *http.Request) {
@@ -67,7 +67,7 @@ func (gc *GalleriesController) Create(w http.ResponseWriter, r *http.Request) {
 	if err := parseForm(&form, r); err != nil {
 		log.Println(err)
 		vd.SetAlert(err)
-		gc.New.Render(w, vd)
+		gc.New.Render(w, r, vd)
 		return
 	}
 
@@ -80,7 +80,7 @@ func (gc *GalleriesController) Create(w http.ResponseWriter, r *http.Request) {
 
 	if err := gc.gs.Create(&gallery); err != nil {
 		vd.SetAlert(err)
-		gc.New.Render(w, vd)
+		gc.New.Render(w, r, vd)
 		return
 	}
 	url, err := gc.r.Get(EditGalleryPath).URL("id", fmt.Sprintf("%v", gallery.ID))
@@ -106,7 +106,7 @@ func (gc *GalleriesController) Edit(w http.ResponseWriter, r *http.Request) {
 	}
 
 	vd.Yield = gallery
-	gc.EditView.Render(w, vd)
+	gc.EditView.Render(w, r, vd)
 }
 
 func (gc *GalleriesController) Show(w http.ResponseWriter, r *http.Request) {
@@ -118,7 +118,7 @@ func (gc *GalleriesController) Show(w http.ResponseWriter, r *http.Request) {
 	}
 
 	vd.Yield = gallery
-	gc.ShowView.Render(w, vd)
+	gc.ShowView.Render(w, r, vd)
 }
 
 func (gc *GalleriesController) Update(w http.ResponseWriter, r *http.Request) {
@@ -143,7 +143,7 @@ func (gc *GalleriesController) Update(w http.ResponseWriter, r *http.Request) {
 	if err := parseForm(&form, r); err != nil {
 		log.Println(err)
 		vd.SetAlert(err)
-		gc.EditView.Render(w, vd)
+		gc.EditView.Render(w, r, vd)
 		return
 	}
 
@@ -151,14 +151,14 @@ func (gc *GalleriesController) Update(w http.ResponseWriter, r *http.Request) {
 	err = gc.gs.Update(gallery)
 	if err != nil {
 		vd.SetAlert(err)
-		gc.EditView.Render(w, vd)
+		gc.EditView.Render(w, r, vd)
 		return
 	}
 	vd.Alert = &views.Alert{
 		Level:   views.AlertLevelSuccess,
 		Message: "Gallery successfully updated!",
 	}
-	gc.ShowView.Render(w, vd)
+	gc.ShowView.Render(w, r, vd)
 }
 
 func (gc *GalleriesController) Delete(w http.ResponseWriter, r *http.Request) {
@@ -180,7 +180,7 @@ func (gc *GalleriesController) Delete(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		vd.SetAlert(err)
 		vd.Yield = gallery
-		gc.EditView.Render(w, vd)
+		gc.EditView.Render(w, r, vd)
 		return
 	}
 

@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"learn-golang/models"
 	"learn-golang/views"
 	"log"
@@ -28,7 +27,7 @@ type Signupform struct {
 
 func (uc UsersController) New(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
-	uc.NewView.Render(w, nil)
+	uc.NewView.Render(w, r, nil)
 }
 
 func (uc *UsersController) Create(w http.ResponseWriter, r *http.Request) {
@@ -40,7 +39,7 @@ func (uc *UsersController) Create(w http.ResponseWriter, r *http.Request) {
 	if err := parseForm(&form, r); err != nil {
 		log.Println(err)
 		vd.SetAlert(err)
-		uc.NewView.Render(w, vd)
+		uc.NewView.Render(w, r, vd)
 		return
 	}
 
@@ -52,7 +51,7 @@ func (uc *UsersController) Create(w http.ResponseWriter, r *http.Request) {
 
 	if err := uc.us.Create(&user); err != nil {
 		vd.SetAlert(err)
-		uc.NewView.Render(w, vd)
+		uc.NewView.Render(w, r, vd)
 		return
 	}
 
@@ -60,21 +59,5 @@ func (uc *UsersController) Create(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/login", http.StatusFound)
 		return
 	}
-	http.Redirect(w, r, "/cookietest", http.StatusFound)
-}
-
-func (uc *UsersController) CookieTest(w http.ResponseWriter, r *http.Request) {
-	cookie, err := r.Cookie("session_token")
-	if err != nil {
-		http.Redirect(w, r, "/login", http.StatusFound)
-		return
-	}
-
-	user, err := uc.us.BySession(cookie.Value)
-	if err != nil {
-		http.Redirect(w, r, "/login", http.StatusFound)
-		return
-	}
-
-	fmt.Fprintln(w, user)
+	http.Redirect(w, r, "/galleries", http.StatusFound)
 }

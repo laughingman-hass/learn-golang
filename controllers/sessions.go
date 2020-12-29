@@ -23,7 +23,7 @@ type SessionsController struct {
 
 func (sc *SessionsController) New(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
-	sc.NewView.Render(w, nil)
+	sc.NewView.Render(w, r, nil)
 }
 
 func (sc *SessionsController) Create(w http.ResponseWriter, r *http.Request) {
@@ -33,7 +33,7 @@ func (sc *SessionsController) Create(w http.ResponseWriter, r *http.Request) {
 	if err := parseForm(&form, r); err != nil {
 		log.Println(err)
 		vd.SetAlert(err)
-		sc.NewView.Render(w, vd)
+		sc.NewView.Render(w, r, vd)
 		return
 	}
 
@@ -45,7 +45,7 @@ func (sc *SessionsController) Create(w http.ResponseWriter, r *http.Request) {
 		default:
 			vd.SetAlert(err)
 		}
-		sc.NewView.Render(w, vd)
+		sc.NewView.Render(w, r, vd)
 		return
 	}
 
@@ -55,7 +55,7 @@ func (sc *SessionsController) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, "/cookietest", http.StatusFound)
+	http.Redirect(w, r, "/galleries", http.StatusFound)
 }
 
 type SessionParams struct {

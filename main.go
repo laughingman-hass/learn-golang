@@ -34,8 +34,11 @@ func main() {
 	services.AutoMigrate()
 
 	r := mux.NewRouter()
-	requireSessionMW := middleware.RequireSession{
+	userMW := middleware.User{
 		UserService: services.User,
+	}
+	requireSessionMW := middleware.RequireSession{
+		User: userMW,
 	}
 
 	staticController := controllers.NewStatic()
@@ -51,7 +54,6 @@ func main() {
 
 	r.HandleFunc("/signup", usersController.New).Methods("GET")
 	r.HandleFunc("/signup", usersController.Create).Methods("POST")
-	r.HandleFunc("/cookietest", usersController.CookieTest).Methods("GET")
 	r.HandleFunc("/login", sessionsController.New).Methods("GET")
 	r.HandleFunc("/login", sessionsController.Create).Methods("POST")
 
@@ -73,7 +75,7 @@ func main() {
 		Methods("POST").
 		Name(controllers.DeleteGalleryPath)
 
-	http.ListenAndServe(":3000", r)
+	http.ListenAndServe(":3000", userMW.Apply(r))
 }
 
 func must(err error) {
