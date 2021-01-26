@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"encoding/json"
 	"learn-golang/intro-to-microservices/product-api/data"
 	"log"
 	"net/http"
@@ -17,10 +16,8 @@ type Products struct {
 
 func (p *Products) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	lp := data.GetProducts()
-	d, err := json.Marshal(lp)
+	err := lp.ToJSON(rw)
 	if err != nil {
 		http.Error(rw, "Unable to marshal json", http.StatusInternalServerError)
 	}
-
-    rw.Write(d)
 }
