@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"learn-golang/intro-to-microservices/product-api/data"
 	"log"
 	"net/http"
@@ -71,4 +72,23 @@ func (p *Products) UpdateProduct(rw http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+}
+
+type KeyProduct struct{}
+
+func (p *Products) MiddlewareProductValidation(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		prod := &data.Product{}
+
+		err := prod.FromJSON(r.Body)
+		if err != nil {
+			http.Error(rw, "Unable to unmarshal json", http.StatusBadRequest)
+			return
+		}
+
+		ctx := context.WithValue(r.Context(), KeyProduct{}, prod)
+		r = r.WithContext(ctx)
+
+		next.ServeHTTP(rw, r)
+	})
 }
