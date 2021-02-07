@@ -2,8 +2,6 @@ package facest
 
 import (
 	"context"
-	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -55,32 +53,10 @@ func (c *Client) GetFaces(ctx context.Context, options *FacesListOptions) (*Face
 		return nil, err
 	}
 
-	req = req.WithContext(ctx)
-
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Accept", "application/json")
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.apiKey))
-
-	res, err := c.HTTPClient.Do(req)
-	if err != nil {
+	res := FacesList{}
+	if err := c.sendRequest(ctx, req, &res); err != nil {
 		return nil, err
 	}
 
-	defer res.Body.Close()
-
-	if res.StatusCode < http.StatusOK || res.StatusCode >= http.StatusBadRequest {
-		var errRes errorResponse
-		if err := json.NewDecoder(res.Body).Decode(&errRes); err != nil {
-			return nil, fmt.Errorf("unknown error, status code: %d", res.StatusCode)
-		}
-
-		return nil, errors.New(errRes.Message)
-	}
-
-	var fullResponse FacesRes
-	if err := json.NewDecoder(res.Body).Decode(&fullResponse); err != nil {
-		return nil, err
-	}
-
-	return &fullResponse.Data, nil
+	return &res, nil
 }
