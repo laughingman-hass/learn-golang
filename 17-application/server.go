@@ -11,16 +11,26 @@ type PlayerStore interface {
 	RecordWin(name string)
 }
 
-type PlayerServer struct {
-	store PlayerStore
-}
+func NewPlayerServer(store PlayerStore) *PlayerServer {
+	p := new(PlayerServer)
+	p.store = store
 
-func (p *PlayerServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	router := http.NewServeMux()
 	router.Handle("/league", http.HandlerFunc(p.leagueHandler))
 	router.Handle("/players/", http.HandlerFunc(p.playerHandler))
 
-	router.ServeHTTP(w, r)
+	p.Handler = router
+
+	return p
+}
+
+type PlayerServer struct {
+	store PlayerStore
+	http.Handler
+}
+
+func (p *PlayerServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	p.Handler.ServeHTTP(w, r)
 }
 
 func (p *PlayerServer) leagueHandler(w http.ResponseWriter, r *http.Request) {
