@@ -19,7 +19,7 @@ gencert:
 		-ca-key=ca-key.pem \
 		-config=test/ca-config.json \
 		-profile=client \
-		test/client-csr.json | cfssljson -bare client
+		test/client-csr.json | cfssljson -bare root-client
 	cfssl gencert \
 		-ca=ca.pem \
 		-ca-key=ca-key.pem \
@@ -29,8 +29,14 @@ gencert:
 		test/client-csr.json | cfssljson -bare nobody-client
 	mv *.pem *.csr ${CONFIG_PATH}
 
+$(CONFIG_PATH)/model.conf:
+	cp test/model.conf ${CONFIG_PATH}/model.conf
+
+$(CONFIG_PATH)/policy.csv:
+	cp test/policy.csv ${CONFIG_PATH}/policy.csv
+
 .PHONY: test
-test:
+test: $(CONFIG_PATH)/model.conf $(CONFIG_PATH)/policy.csv
 	go test -race ./...
 
 .PHONY: compile

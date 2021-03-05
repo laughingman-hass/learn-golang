@@ -50,9 +50,10 @@ func setupTest(t *testing.T, fn func(*Config)) (
 		[]grpc.DialOption,
 	) {
 		tlsConfig, err := config.SetupTLSConfig(config.TLSConfig{
-			CertFile: config.ClientCertFile,
-			KeyFile:  config.ClientKeyFile,
+			CertFile: crtPath,
+			KeyFile:  keyPath,
 			CAFile:   config.CAFile,
+			Server:   false,
 		})
 		require.NoError(t, err)
 
