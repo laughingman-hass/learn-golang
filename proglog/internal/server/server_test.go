@@ -1,8 +1,14 @@
 package server
 
 import (
+	"io/ioutil"
+	"net"
 	api "proglog/api/v1"
+	"proglog/internal/log"
 	"testing"
+
+	"github.com/stretchr/testify/require"
+	"google.golang.org/grpc"
 )
 
 func TestServer(t *testing.T) {
@@ -20,5 +26,48 @@ func TestServer(t *testing.T) {
 			defer teardown()
 			fn(t, client, config)
 		})
+	}
+}
+
+func setupTest(t *testing.T, fn func(*Config)) (
+	client api.LogClient,
+	cfg *Config,
+	teardown func(),
+) {
+	t.Helper()
+
+	l, err := net.Listen("tcp", ":0")
+	require.NoError(t, err)
+
+	clientOptions := []grpc.DialOption{grpc.WithInsecure()}
+	cc, err := grpc.Dial(l.Addr().String(), clientOptions...)
+	require.NoError(t, err)
+
+	dir, err := ioutil.TempDir("", "server-test")
+	require.NoError(t, err)
+
+	clog, err := log.NewLog(dir, log.Config{})
+	require.NoError(t, err)
+
+	cfg = &Config{
+		CommitLog: clog,
+	}
+	if fn != nil {
+		fn(cfg)
+	}
+	server, err := NewGRPCServer(cfg)
+	require.NoError(t, err)
+
+	go func() {
+		server.Serve(l)
+	}()
+
+	client = api.NewLogClient(cc)
+
+	return client, cfg, func() {
+		server.Stop()
+		cc.Close()
+		l.Close()
+		clog.Remove()
 	}
 }
