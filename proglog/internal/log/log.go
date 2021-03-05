@@ -113,6 +113,16 @@ func (l *Log) Read(off uint64) (*api.Record, error) {
 	return s.Read(off)
 }
 
+func (l *Log) newSegment(off uint64) error {
+	segment, err := newSegment(l.Dir, off, l.Config)
+	if err != nil {
+		return err
+	}
+	l.segments = append(l.segments, segment)
+	l.activeSegment = segment
+	return nil
+}
+
 func (l *Log) Close() error {
 	l.mu.Lock()
 	defer l.mu.Unlock()
