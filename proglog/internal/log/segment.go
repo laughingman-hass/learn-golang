@@ -104,3 +104,22 @@ func (s *segment) InMaxed() bool {
 	return s.store.size >= s.config.Segment.MaxStoreBytes ||
 		s.index.size >= s.config.Segment.MaxIndexBytes
 }
+
+func (s *segment) Remove() error {
+	err := s.Close()
+	if err != nil {
+		return err
+	}
+
+	err = os.Remove(s.index.Name())
+	if err != nil {
+		return err
+	}
+
+	err = os.Remove(s.store.Name())
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
