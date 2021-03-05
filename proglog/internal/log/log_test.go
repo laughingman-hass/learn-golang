@@ -45,3 +45,9 @@ func testAppendRead(t *testing.T, log *Log) {
 	require.NoError(t, err)
 	require.Equal(t, record.Value, read.Value)
 }
+
+func testOutOfRangeErr(t *testing.T, log *Log) {
+	read, err := log.Read(1)
+	require.Nil(t, read)
+	require.Error(t, err)
+}
