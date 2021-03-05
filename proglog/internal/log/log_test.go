@@ -5,6 +5,8 @@ import (
 	"os"
 	"testing"
 
+	api "proglog/api/v1"
+
 	"github.com/stretchr/testify/require"
 )
 
@@ -29,4 +31,17 @@ func TestLog(t *testing.T) {
 			fn(t, log)
 		})
 	}
+}
+
+func testAppendRead(t *testing.T, log *Log) {
+	record := &api.Record{
+		Value: []byte("hello world"),
+	}
+	off, err := log.Append(record)
+	require.NoError(t, err)
+	require.Equal(t, uint64(0), off)
+
+	read, err := log.Read(off)
+	require.NoError(t, err)
+	require.Equal(t, record.Value, read.Value)
 }
