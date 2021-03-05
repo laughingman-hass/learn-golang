@@ -3,6 +3,7 @@ package log
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path"
 	api "proglog/api/v1"
 	"sort"
@@ -109,4 +110,34 @@ func (l *Log) Read(off uint64) (*api.Record, error) {
 	}
 
 	return s.Read(off)
+}
+
+func (l *Log) Close() error {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+
+	for _, segment := range l.segments {
+		err := segment.Close()
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (l *Log) Remove() error {
+	err := l.Close()
+	if err != nil {
+		return err
+	}
+	return os.RemoveAll(l.Dir)
+}
+
+func (l *Log) Reset() error {
+	err := l.Remove()
+	if err != nil {
+		return err
+	}
+	return l.setup()
 }
