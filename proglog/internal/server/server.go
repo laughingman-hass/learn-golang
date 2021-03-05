@@ -77,3 +77,8 @@ func (s *grpcServer) ConsumeStream(
 		}
 	}
 }
+
+type CommitLog interface {
+	Append(*api.Record) (uint64, error)
+	Read(uint64) (*api.Record, error)
+}
