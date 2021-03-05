@@ -123,3 +123,17 @@ func (s *segment) Remove() error {
 
 	return nil
 }
+
+func (s *segment) Close() error {
+	err := s.index.Close()
+	if err != nil {
+		return err
+	}
+
+	err = s.store.Close()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
