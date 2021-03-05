@@ -47,3 +47,22 @@ type index struct {
 	mmap gommap.MMap
 	size uint64
 }
+
+func (i *index) Close() error {
+	err := i.mmap.Sync(gommap.MS_SYNC)
+	if err != nil {
+		return err
+	}
+
+	err = i.file.Sync()
+	if err != nil {
+		return err
+	}
+
+	err = i.file.Truncate(int64(i.size))
+	if err != nil {
+		return err
+	}
+
+	return i.file.Close()
+}
