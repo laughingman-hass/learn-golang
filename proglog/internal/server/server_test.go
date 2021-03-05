@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"io/ioutil"
 	"net"
 	api "proglog/api/v1"
@@ -70,4 +71,27 @@ func setupTest(t *testing.T, fn func(*Config)) (
 		l.Close()
 		clog.Remove()
 	}
+}
+
+func testProduceConsume(t *testing.T, client api.LogClient, config *Config) {
+	ctx := context.Background()
+
+	want := &api.Record{
+		Value: []byte("hello world"),
+	}
+
+	produce, err := client.Produce(
+		ctx,
+		&api.ProduceRequest{
+			Record: want,
+		},
+	)
+	require.NoError(t, err)
+
+	consume, err := client.Consume(ctx, &api.ConsumeRequest{
+		Offset: produce.Offset,
+	})
+	require.NoError(t, err)
+	require.Equal(t, want.Value, consume.Record.Value)
+	require.Equal(t, want.Offset, consume.Record.Offset)
 }
