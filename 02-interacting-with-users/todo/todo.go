@@ -87,3 +87,21 @@ func (l *List) Save(filename string) error {
 
 	return ioutil.WriteFile(filename, js, 0644)
 }
+
+// String prints out a formatted list
+// Implements the fmt.Stringer interface
+func (l *List) String() string {
+	formatted := ""
+
+	for k, t := range *l {
+		prefix := "  "
+		if t.Done {
+			prefix = "X "
+		}
+
+		// Ajust the item number k to print numbers starting from 1 instead of 0
+		formatted += fmt.Sprintf("%s%d: %s\n", prefix, k+1, t.Task)
+	}
+
+	return formatted
+}
