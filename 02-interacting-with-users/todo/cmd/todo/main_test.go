@@ -29,11 +29,14 @@ func TestMain(m *testing.M) {
 	}
 
 	fmt.Println("Running tests...")
+	os.Setenv("TODO_FILENAME", fileName)
+
 	result := m.Run()
 
 	fmt.Println("Cleaning up...")
 	os.Remove(binName)
 	os.Remove(fileName)
+	os.Unsetenv("TODO_FILENAME")
 
 	os.Exit(result)
 }
