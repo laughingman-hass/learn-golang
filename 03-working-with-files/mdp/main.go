@@ -7,6 +7,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"os/exec"
 
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/russross/blackfriday/v2"
@@ -31,6 +32,7 @@ const (
 func main() {
 	// Parse flags
 	filename := flag.String("file", "", "Markdown file to preview")
+	skipPreview := flag.Bool("s", false, "Skip auto-preview")
 	flag.Parse()
 
 	// If user did not provide input file, show usage
@@ -39,13 +41,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err := run(*filename, os.Stdout); err != nil {
+	if err := run(*filename, os.Stdout, *skipPreview); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 }
 
-func run(filename string, out io.Writer) error {
+func run(filename string, out io.Writer, skipPreview bool) error {
 	// Read all the data from the input file and check for errors
 	input, err := ioutil.ReadFile(filename)
 	if err != nil {
@@ -64,10 +66,18 @@ func run(filename string, out io.Writer) error {
 		return err
 	}
 
-	outName := temp.Name()
+	outName := temp.Name() + ".html"
 	fmt.Fprintln(out, outName)
 
-	return saveHTML(outName, htmlData)
+	if err := saveHTML(outName, htmlData); err != nil {
+		return err
+	}
+
+	if skipPreview {
+		return nil
+	}
+
+	return preview(outName)
 }
 
 func parseContent(input []byte) []byte {
@@ -90,4 +100,19 @@ func parseContent(input []byte) []byte {
 func saveHTML(outFname string, data []byte) error {
 	// Write the bytes to the file
 	return ioutil.WriteFile(outFname, data, 0644)
+}
+
+func preview(fname string) error {
+	// Locate 'open' command in PATH
+	openPath, err := exec.LookPath("open")
+	if err != nil {
+		return err
+	}
+
+	// Open the file
+	if err := exec.Command(openPath, "-a", "Brave Browser", fname).Start(); err != nil {
+		return err
+	}
+
+	return nil
 }
