@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"time"
 
 	"github.com/microcosm-cc/bluemonday"
 	"github.com/russross/blackfriday/v2"
@@ -18,7 +19,7 @@ const (
         <html>
             <head>
                 <meta http-equiv="contect-type" content="text/html; charset=utf-8">
-                <title><arkdown Preview Tool</title>
+                <title>Markdown Preview Tool</title>
             </head>
             <body>
     `
@@ -77,6 +78,8 @@ func run(filename string, out io.Writer, skipPreview bool) error {
 		return nil
 	}
 
+	defer os.Remove(outName)
+
 	return preview(outName)
 }
 
@@ -113,6 +116,10 @@ func preview(fname string) error {
 	if err := exec.Command(openPath, "-a", "Brave Browser", fname).Start(); err != nil {
 		return err
 	}
+
+	// Give the browser some time to open the file before it can be deleted
+	// by the run function
+	time.Sleep(2 * time.Second)
 
 	return nil
 }
