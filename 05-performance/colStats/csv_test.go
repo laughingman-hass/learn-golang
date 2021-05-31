@@ -83,7 +83,7 @@ func TestCSV2Float(t *testing.T) {
 			name:   "FailRead",
 			col:    1,
 			exp:    nil,
-			errMsg: "Connot read data from file",
+			errMsg: "Cannot read data from file",
 			r:      iotest.TimeoutReader(bytes.NewReader([]byte{0})),
 		},
 	}
